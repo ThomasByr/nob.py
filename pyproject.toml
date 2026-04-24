@@ -1,0 +1,93 @@
+[project]
+name = "nob"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Thomas Byr", email = "thomas.bouyer@protonmail.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "click>=8.3.3",
+    "pydantic>=2.13.3",
+    "pyyaml>=6.0.3",
+    "rich>=15.0.0",
+    "rich-click>=1.9.7",
+    "typing-extensions>=4.15.0",
+]
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.2,<0.12.0"]
+build-backend = "uv_build"
+
+[tool.ruff]
+# Enable the pycodestyle (`E`) and Pyflakes (`F`) rules by default.
+# Unlike Flake8, Ruff doesn't enable pycodestyle warnings (`W`) or
+# McCabe complexity (`C901`) by default.
+
+# Enable flake8-bugbear (`B`) rules, in addition to the defaults.
+lint.select = ["E", "F", "B"]
+lint.ignore = ["E501"]
+
+# Allow fix for all enabled rules (when `--fix`) is provided.
+lint.fixable = ["ALL"]
+lint.unfixable = ["B"]
+
+# Allow unused variables when underscore-prefixed.
+lint.dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hatch",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+]
+
+# Same as Black.
+line-length = 110
+
+# Assume Python 3.11
+target-version = "py311"
+
+# Ignore `E402` (import violations) in all `__init__.py` files.
+[tool.ruff.lint.per-file-ignores]
+"*.py" = ["E402", "F403"]
+"**/{tests,docs,tools}/*" = ["E402"]
+
+[tool.ruff.lint.flake8-quotes]
+docstring-quotes = "double"
+
+[tool.ty.rules]
+"unresolved-import" = "ignore"
+
+# Enable the `pytest` plugin and configure it.
+[tool.pytest.ini_options]
+minversion = "9.0"
+addopts = ["-ra", "-q"]
+testpaths = ["tests", "integration"]
+filterwarnings = ["ignore::DeprecationWarning"]
+log_format = "%(asctime)s %(levelname)s %(message)s"
+log_date_format = "%Y-%m-%d %H:%M:%S"
