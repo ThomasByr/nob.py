@@ -148,6 +148,7 @@ def cmd(grp: click.RichGroup):
 
 
 opt = click.option
+arg = click.argument
 
 
 def pass_context(func):
