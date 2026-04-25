@@ -52,6 +52,9 @@ uv run <file.py> -v test -l
 
 ## Contributing
 
+> [!Important]
+> Sign your commits
+
 ```sh
 git clone git@github.com:ThomasByr/nob.py nob
 ```
