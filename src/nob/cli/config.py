@@ -7,32 +7,7 @@ import yaml
 from pydantic import BaseModel, Field
 from typing_extensions import override
 
-from nob.utils.auto_numbered_enum import AutoNumberedEnum
-
-__all__ = ["AliasedGroup", "Config", "pass_config", "LogLevel", "CLIMutex"]
-
-
-class LogLevel(AutoNumberedEnum):
-    VERBOSE = ()
-    NORMAL = ()
-    QUIET = ()
-
-    @classmethod
-    def from_bool(cls, verbose: bool, quiet: bool) -> "LogLevel":
-        if verbose and quiet:
-            raise ValueError("Cannot be both verbose and quiet.")
-        if verbose:
-            return cls.VERBOSE
-        if quiet:
-            return cls.QUIET
-        return cls.NORMAL
-
-    def to_logging_level(self) -> int:
-        if self == LogLevel.VERBOSE:
-            return logging.DEBUG
-        if self == LogLevel.QUIET:
-            return logging.ERROR
-        return logging.INFO
+__all__ = ["AliasedGroup", "Config", "pass_config", "CLIMutex"]
 
 
 class Config(BaseModel):
@@ -41,7 +16,7 @@ class Config(BaseModel):
     DEFAULT_CONFIG_PATH: str = os.path.join("assets", "cfg", "default.yml")
 
     aliases: dict[str, str] = Field(default_factory=dict)
-    log_level: LogLevel = LogLevel.NORMAL
+    log_level: int = logging.INFO
     log_file: str | None = None
 
     def add_alias(self, alias: str, cmd: str):
