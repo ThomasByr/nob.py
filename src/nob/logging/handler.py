@@ -27,7 +27,7 @@ def init_handler(log_level: int = logging.INFO, log_file: str | None = None):
         log_level (int, optional): The logging level to set. Defaults to logging.INFO.
         log_file (str, optional): The path where logs will be written. If None, logs will not be written to a file.
     """
-    handlers = [RichHandler()]  # modifies the record first for RotatingFileHandler
+    handlers: list = [RichHandler()]  # modifies the record first for RotatingFileHandler
     if log_file:
         handlers.append(RotatingFileHandler(log_file, maxBytes=1024 * 1024 * 100, backupCount=5))
     logging.basicConfig(
