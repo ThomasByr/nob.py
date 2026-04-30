@@ -124,7 +124,7 @@ def cmd(grp: click.RichGroup):
         def runner(cfg: Config, ctx: click.Context, **kwargs):
             import inspect
 
-            from nob.logging.handler import init_handler
+            from nob.logging import init_handler
 
             lg = logging.getLogger(name)
             init_handler(cfg.log_level, cfg.log_file)
