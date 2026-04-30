@@ -72,6 +72,7 @@ class AliasedGroup(click.RichGroup):
     @override
     def resolve_command(self, ctx, args):
         _, cmd, args = super().resolve_command(ctx, args)
+        assert cmd is not None
         return cmd.name, cmd, args
 
 
