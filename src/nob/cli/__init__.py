@@ -102,8 +102,8 @@ def grp(main: Callable[P, R]) -> click.RichGroup:
         return main(*args, **kwargs)
 
     for d in reversed(dec):
-        wrapper = d(wrapper)
-    return wrapper
+        wrapper = d(wrapper)  # ty:ignore
+    return wrapper  # ty:ignore
 
 
 def cmd(grp: click.RichGroup):
@@ -140,7 +140,7 @@ def cmd(grp: click.RichGroup):
             if has_kwargs or "lg" in sig.parameters:
                 kw["lg"] = lg
 
-            return func(**kw)
+            return func(**kw)  # ty:ignore
 
         return runner
 
