@@ -11,10 +11,12 @@ __all__ = ["track", "progress"]
 T = TypeVar("T")
 
 
+class Unspecified: ...
+
 def track(
     sequence: Iterable[T],
     description: str = "Working...",
-    total: float | None = None,
+    total: float | None = -1,
     completed: int = 0,
     auto_refresh: bool = True,
     transient: bool = False,
@@ -31,7 +33,7 @@ def track(
     Args:
         sequence (Iterable[T]): Values you wish to iterate over and track progress.
         description (str, optional): Description of task show next to progress bar. Defaults to "Working".
-        total: (float, optional): Total number of steps. Default is len(sequence).
+        total: (float, optional): Total number of steps. Set to `-1` to use default, deactivate with `None`. Default is len(sequence).
         completed (int, optional): Number of steps completed so far. Defaults to 0.
         auto_refresh (bool, optional): Automatic refresh, disable to force a refresh after each iteration. Default is True.
         transient: (bool, optional): Clear the progress on exit. Defaults to False.
@@ -58,7 +60,7 @@ def track(
     with progress:
         yield from progress.track(
             sequence,
-            total=total,
+            total=None if total is None or total < 0 else total,
             completed=completed,
             description=description,
             update_period=update_period,
