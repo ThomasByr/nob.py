@@ -4,9 +4,10 @@ from typing import ParamSpec, TypeVar
 
 import rich_click as click
 
+from . import types  # noqa: F401
 from .config import AliasedGroup, CLIMutex, Config, pass_config
 
-all = ["opt", "cmd", "grp", "pass_config", "pass_context"]
+all = ["opt", "cmd", "grp", "pass_config", "pass_context", "types"]
 
 P = ParamSpec("P")
 R = TypeVar("R")
@@ -102,8 +103,8 @@ def grp(main: Callable[P, R]) -> click.RichGroup:
         return main(*args, **kwargs)
 
     for d in reversed(dec):
-        wrapper = d(wrapper)  # ty:ignore
-    return wrapper  # ty:ignore
+        wrapper = d(wrapper)  # ty:ignore[invalid-assignment]
+    return wrapper  # ty:ignore[invalid-return-type]
 
 
 def cmd(grp: click.RichGroup):
@@ -116,7 +117,7 @@ def cmd(grp: click.RichGroup):
 
     def wrapper(func: Callable[P, R]):
         @grp.command(
-            name=(name := func.__name__),  # ty:ignore
+            name=(name := func.__name__),  # ty:ignore[unresolved-attribute]
             help=func.__doc__,
         )
         @click.pass_context
@@ -140,7 +141,7 @@ def cmd(grp: click.RichGroup):
             if has_kwargs or "lg" in sig.parameters:
                 kw["lg"] = lg
 
-            return func(**kw)  # ty:ignore
+            return func(**kw)  # ty:ignore[missing-argument]
 
         return runner
 
