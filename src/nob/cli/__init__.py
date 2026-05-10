@@ -61,20 +61,28 @@ def install_rich_traceback():
 
 
 def grp(
-    default: Callable[[], click.RichCommand] | None = None, *default_args, **default_kwargs
+    grp: click.RichGroup | None = None,
+    default: Callable[[], click.RichCommand] | None = None,
+    *default_args,
+    **default_kwargs,
 ) -> click.RichGroup:
     """Registers the decorated function as a Click group and adds the common options to it.\\
     Please provide default arguments (that don't have defaults defined) since you won't be able to do so in the CLI.
 
     Args:
+        grp (click.RichGroup, optional): Parent group to attach the group to. Defaults to None.
         default (() -> RichCommand, optional): Factory of the default command to run if nothing is passed. Defaults to None.
-        *default_args (): Default arguments
-        **default_kwargs (): Default named arguments
+        *default_args (): Default arguments.
+        **default_kwargs (): Default named arguments.
     """
+
+    entity = grp or click
 
     def inner(main: Callable[P, R]):
         dec = [
-            click.group(
+            entity.group(
+                name=main.__name__,  # ty:ignore[unresolved-attribute]
+                help=main.__doc__,
                 cls=AliasedGroup,
                 context_settings={"help_option_names": ["-h", "--help"]},
                 invoke_without_command=default is not None,
