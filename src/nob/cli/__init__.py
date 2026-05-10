@@ -41,77 +41,96 @@ def read_verbosity(level: int):
     return callback
 
 
-def grp(main: Callable[P, R]) -> click.RichGroup:
-    """Registers the decorated function as a Click group and adds the common options to it."""
-    dec = [
-        click.group(cls=AliasedGroup, context_settings={"help_option_names": ["-h", "--help"]}),
-        click.option(
-            "-v",
-            "--verbose",
-            is_flag=True,
-            help="Enable verbose logging (DEBUG level).",
-            callback=read_verbosity(logging.DEBUG),
-            expose_value=False,
-            cls=CLIMutex,
-            not_required_if=["quiet"],
-        ),
-        click.option(
-            "-q",
-            "--quiet",
-            is_flag=True,
-            help="Enable quiet logging (WARNING level).",
-            callback=read_verbosity(logging.WARNING),
-            expose_value=False,
-            cls=CLIMutex,
-            not_required_if=["verbose"],
-        ),
-        click.option(
-            "-c",
-            "--config",
-            type=click.Path(exists=True, dir_okay=False),
-            help="Path to a custom config file to load instead of the default (defaults to assets/cfg/default.yml).",
-            callback=read_config,
-            expose_value=False,
-        ),
-        click.option(
-            "-l",
-            "--log-file",
-            type=click.Path(dir_okay=False),
-            help="Specify the path where the RotatingFileHandler will write its outputs.",
-            callback=read_log_file,
-            expose_value=False,
-        ),
-    ]
+def grp(default: Callable[[], Callable] | None = None, *default_args, **default_kwargs) -> click.RichGroup:
+    """Registers the decorated function as a Click group and adds the common options to it.\\
+    Please provide default arguments since you won't be able to do so in the CLI.
 
-    def wrapper(*args, **kwargs):
-        import os
+    Args:
+        default (() -> RichCommand, optional): Factory of the default command to run if nothing is passed. Defaults to None.
+        *default_args (): Default arguments
+        **default_kwargs (): Default named arguments
+    """
 
-        from rich.traceback import install
+    def inner(main: Callable[P, R]):
+        dec = [
+            click.group(
+                cls=AliasedGroup,
+                context_settings={"help_option_names": ["-h", "--help"]},
+                invoke_without_command=default is not None,
+            ),
+            click.option(
+                "-v",
+                "--verbose",
+                is_flag=True,
+                help="Enable verbose logging (DEBUG level).",
+                callback=read_verbosity(logging.DEBUG),
+                expose_value=False,
+                cls=CLIMutex,
+                not_required_if=["quiet"],
+            ),
+            click.option(
+                "-q",
+                "--quiet",
+                is_flag=True,
+                help="Enable quiet logging (WARNING level).",
+                callback=read_verbosity(logging.WARNING),
+                expose_value=False,
+                cls=CLIMutex,
+                not_required_if=["verbose"],
+            ),
+            click.option(
+                "-c",
+                "--config",
+                type=click.Path(exists=True, dir_okay=False),
+                help="Path to a custom config file to load instead of the default (defaults to assets/cfg/default.yml).",
+                callback=read_config,
+                expose_value=False,
+            ),
+            click.option(
+                "-l",
+                "--log-file",
+                type=click.Path(dir_okay=False),
+                help="Specify the path where the RotatingFileHandler will write its outputs.",
+                callback=read_log_file,
+                expose_value=False,
+            ),
+            pass_context,
+        ]
 
-        DEBUG_TRACE = os.environ.get("DEBUG_TRACE", "0") == "1"
+        def wrapper(ctx: click.Context, *args, **kwargs):
+            import os
 
-        extra_lines = 3 if DEBUG_TRACE else 0
-        max_frames = 100 if DEBUG_TRACE else 1
-        show_locals = DEBUG_TRACE
+            from rich.traceback import install
 
-        install(
-            show_locals=show_locals,
-            extra_lines=extra_lines,
-            max_frames=max_frames,
-            suppress=["click", "rich"],
-        )
-        return main(*args, **kwargs)
+            DEBUG_TRACE = os.environ.get("DEBUG_TRACE", "0") == "1"
 
-    for d in reversed(dec):
-        wrapper = d(wrapper)  # ty:ignore[invalid-assignment]
-    return wrapper  # ty:ignore[invalid-return-type]
+            extra_lines = 3 if DEBUG_TRACE else 0
+            max_frames = 100 if DEBUG_TRACE else 1
+            show_locals = DEBUG_TRACE
+
+            install(
+                show_locals=show_locals,
+                extra_lines=extra_lines,
+                max_frames=max_frames,
+                suppress=["click", "rich"],
+            )
+
+            if default is not None and ctx.invoked_subcommand is None:
+                ctx.invoke(default(), *default_args, **default_kwargs)
+            return main(*args, **kwargs)
+
+        for d in reversed(dec):
+            wrapper = d(wrapper)  # ty:ignore[invalid-assignment]
+        return wrapper
+
+    return inner  # ty:ignore[invalid-return-type]
 
 
-def cmd(grp: click.RichGroup):
+def cmd(grp: click.RichGroup, default: bool = False):
     """Decorator to create a command with the given group.\\
     Adds the following parameters to the command if they are present in the function signature or if the function accepts `**kwargs`:
     - `cfg`: The Config object `nob.cli.config.Config`
-    - `ctx`: The Click context object `click.Context`
+    - `ctx`: The Click context object `rich_click.Context`
     - `lg`: A logger with the name of the command `logging.Logger`
     """
 
