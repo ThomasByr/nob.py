@@ -1,1 +1,1 @@
-from rich_click import Choice, File, FloatRange, IntRange, ParamType  # noqa: F401
+from rich_click import Choice, File, FloatRange, IntRange, ParamType, Path  # noqa: F401
