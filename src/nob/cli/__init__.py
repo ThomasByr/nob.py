@@ -41,7 +41,7 @@ def read_verbosity(level: int):
     return callback
 
 
-def grp(default: Callable[[], Callable] | None = None, *default_args, **default_kwargs) -> click.RichGroup:
+def grp(default: Callable[[], click.RichCommand] | None = None, *default_args, **default_kwargs) -> click.RichGroup:
     """Registers the decorated function as a Click group and adds the common options to it.\\
     Please provide default arguments since you won't be able to do so in the CLI.
 
@@ -55,7 +55,7 @@ def grp(default: Callable[[], Callable] | None = None, *default_args, **default_
         dec = [
             click.group(
                 cls=AliasedGroup,
-                context_settings={"help_option_names": ["-h", "--help"]},
+                context_settings={"help_option_names": ["-h", "--help"], "ignore_unknown_options": True, "allow_extra_args": True},
                 invoke_without_command=default is not None,
             ),
             click.option(
@@ -116,7 +116,7 @@ def grp(default: Callable[[], Callable] | None = None, *default_args, **default_
             )
 
             if default is not None and ctx.invoked_subcommand is None:
-                ctx.invoke(default(), *default_args, **default_kwargs)
+                ctx.forward(default(), *default_args, **default_kwargs)
             return main(*args, **kwargs)
 
         for d in reversed(dec):
@@ -126,16 +126,17 @@ def grp(default: Callable[[], Callable] | None = None, *default_args, **default_
     return inner  # ty:ignore[invalid-return-type]
 
 
-def cmd(grp: click.RichGroup, default: bool = False):
-    """Decorator to create a command with the given group.\\
+def cmd(grp: click.RichGroup | None = None):
+    """Decorator to create a command. Can be attached to a group.\\
     Adds the following parameters to the command if they are present in the function signature or if the function accepts `**kwargs`:
     - `cfg`: The Config object `nob.cli.config.Config`
     - `ctx`: The Click context object `rich_click.Context`
     - `lg`: A logger with the name of the command `logging.Logger`
     """
+    entity = grp or click
 
     def wrapper(func: Callable[P, R]):
-        @grp.command(
+        @entity.command(
             name=(name := func.__name__),  # ty:ignore[unresolved-attribute]
             help=func.__doc__,
         )
