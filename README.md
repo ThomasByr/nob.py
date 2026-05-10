@@ -25,32 +25,24 @@ import logging
 from nob import cli
 
 
-@cli.grp()
-def main(): ...
-
-
-@cli.opt("-l", "--log", is_flag=True, help="Prints log messages.")
-@cli.cmd(main)
-def test(lg: logging.Logger, log: bool = False):
-
-    if log:
-        lg.debug("This is a debug message.")
-        lg.info("This is an info message.")
-        lg.warning("This is a warning message.")
-        lg.error("This is an error message.")
-        lg.critical("This is a critical message.")
+@cli.opt("--name", type=str, required=True, help="Greet someone.")
+@cli.cmd()
+def hello(lg: logging.Logger, name: str | None = None):
+    lg.info("Hello %s", name or "")
 
 
 if __name__ == "__main__":
-    main()
+    hello()
 
 ```
 
 run with:
 
 ```sh
-uv run <file.py> -v test -l
+uv run <file.py> --name Eric
 ```
+
+Get more examples in the [[Wiki]].
 
 ## Contributing
 
