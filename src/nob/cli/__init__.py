@@ -41,7 +41,28 @@ def read_verbosity(level: int):
     return callback
 
 
-def grp(default: Callable[[], click.RichCommand] | None = None, *default_args, **default_kwargs) -> click.RichGroup:
+def install_rich_traceback():
+    import os
+
+    from rich.traceback import install
+
+    DEBUG_TRACE = os.environ.get("DEBUG_TRACE", "0") == "1"
+
+    extra_lines = 3 if DEBUG_TRACE else 0
+    max_frames = 100 if DEBUG_TRACE else 1
+    show_locals = DEBUG_TRACE
+
+    install(
+        show_locals=show_locals,
+        extra_lines=extra_lines,
+        max_frames=max_frames,
+        suppress=["click", "rich"],
+    )
+
+
+def grp(
+    default: Callable[[], click.RichCommand] | None = None, *default_args, **default_kwargs
+) -> click.RichGroup:
     """Registers the decorated function as a Click group and adds the common options to it.\\
     Please provide default arguments since you won't be able to do so in the CLI.
 
@@ -55,7 +76,7 @@ def grp(default: Callable[[], click.RichCommand] | None = None, *default_args, *
         dec = [
             click.group(
                 cls=AliasedGroup,
-                context_settings={"help_option_names": ["-h", "--help"], "ignore_unknown_options": True, "allow_extra_args": True},
+                context_settings={"help_option_names": ["-h", "--help"]},
                 invoke_without_command=default is not None,
             ),
             click.option(
@@ -98,23 +119,6 @@ def grp(default: Callable[[], click.RichCommand] | None = None, *default_args, *
         ]
 
         def wrapper(ctx: click.Context, *args, **kwargs):
-            import os
-
-            from rich.traceback import install
-
-            DEBUG_TRACE = os.environ.get("DEBUG_TRACE", "0") == "1"
-
-            extra_lines = 3 if DEBUG_TRACE else 0
-            max_frames = 100 if DEBUG_TRACE else 1
-            show_locals = DEBUG_TRACE
-
-            install(
-                show_locals=show_locals,
-                extra_lines=extra_lines,
-                max_frames=max_frames,
-                suppress=["click", "rich"],
-            )
-
             if default is not None and ctx.invoked_subcommand is None:
                 ctx.forward(default(), *default_args, **default_kwargs)
             return main(*args, **kwargs)
@@ -139,6 +143,7 @@ def cmd(grp: click.RichGroup | None = None):
         @entity.command(
             name=(name := func.__name__),  # ty:ignore[unresolved-attribute]
             help=func.__doc__,
+            context_settings={"help_option_names": ["-h", "--help"]},
         )
         @click.pass_context
         @pass_config
@@ -165,6 +170,7 @@ def cmd(grp: click.RichGroup | None = None):
 
         return runner
 
+    install_rich_traceback()
     return wrapper
 
 
