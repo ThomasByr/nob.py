@@ -42,7 +42,7 @@ run with:
 uv run <file.py> --name Eric
 ```
 
-Get more examples in the [[Wiki]].
+Get more examples in the [Wiki](https://github.com/ThomasByr/nob.py/wiki/).
 
 ## Contributing
 
