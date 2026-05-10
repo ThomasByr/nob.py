@@ -64,7 +64,7 @@ def grp(
     default: Callable[[], click.RichCommand] | None = None, *default_args, **default_kwargs
 ) -> click.RichGroup:
     """Registers the decorated function as a Click group and adds the common options to it.\\
-    Please provide default arguments since you won't be able to do so in the CLI.
+    Please provide default arguments (that don't have defaults defined) since you won't be able to do so in the CLI.
 
     Args:
         default (() -> RichCommand, optional): Factory of the default command to run if nothing is passed. Defaults to None.
