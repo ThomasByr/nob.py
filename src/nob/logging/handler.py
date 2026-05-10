@@ -12,9 +12,7 @@ def mute_logger(*names: str) -> None:
     Args:
         name (str): The name of the logger to mute.
     """
-    log = logging.getLogger("mute_logger")
     for name in names:
-        log.debug("Muting logger: %s", name)
         logger = logging.getLogger(name)
         logger.setLevel(logging.WARNING)
         logger.propagate = False  # prevent logs from propagating to root logger
