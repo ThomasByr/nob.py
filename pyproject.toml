@@ -1,7 +1,7 @@
 [project]
 name = "nob"
 version = "0.1.0"
-description = "Add your description here"
+description = "Reasonable defaults for Click CLI applications."
 readme = "README.md"
 authors = [
     { name = "Thomas Byr", email = "thomas.bouyer@protonmail.com" }
