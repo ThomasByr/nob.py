@@ -7,11 +7,8 @@ from .progress import default_columns
 
 __all__ = ["track", "progress"]
 
-
 T = TypeVar("T")
 
-
-class Unspecified: ...
 
 def track(
     sequence: Iterable[T],
