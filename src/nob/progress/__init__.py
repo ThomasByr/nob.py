@@ -1,5 +1,5 @@
-from collections.abc import Callable
-from typing import Iterable, TypeVar
+from collections.abc import Callable, Iterable
+from typing import TypeVar
 
 from rich.progress import Console, Progress
 
