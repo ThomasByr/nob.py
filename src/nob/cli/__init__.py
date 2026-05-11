@@ -79,52 +79,62 @@ def grp(
     entity = grp or click
 
     def inner(main: Callable[P, R]):
-        dec = [
-            entity.group(
-                name=main.__name__,  # ty:ignore[unresolved-attribute]
-                help=main.__doc__,
-                cls=AliasedGroup,
-                context_settings={"help_option_names": ["-h", "--help"]},
-                invoke_without_command=default is not None,
-            ),
-            click.option(
-                "-v",
-                "--verbose",
-                is_flag=True,
-                help="Enable verbose logging (DEBUG level).",
-                callback=read_verbosity(logging.DEBUG),
-                expose_value=False,
-                cls=CLIMutex,
-                not_required_if=["quiet"],
-            ),
-            click.option(
-                "-q",
-                "--quiet",
-                is_flag=True,
-                help="Enable quiet logging (WARNING level).",
-                callback=read_verbosity(logging.WARNING),
-                expose_value=False,
-                cls=CLIMutex,
-                not_required_if=["verbose"],
-            ),
-            click.option(
-                "-c",
-                "--config",
-                type=click.Path(exists=True, dir_okay=False),
-                help="Path to a custom config file to load instead of the default (defaults to assets/cfg/default.yml).",
-                callback=read_config,
-                expose_value=False,
-            ),
-            click.option(
-                "-l",
-                "--log-file",
-                type=click.Path(dir_okay=False),
-                help="Specify the path where the RotatingFileHandler will write its outputs.",
-                callback=read_log_file,
-                expose_value=False,
-            ),
-            pass_context,
-        ]
+        dec = (
+            [
+                entity.group(
+                    name=main.__name__,  # ty:ignore[unresolved-attribute]
+                    help=main.__doc__,
+                    cls=AliasedGroup,
+                    context_settings={"help_option_names": ["-h", "--help"]},
+                    invoke_without_command=default is not None,
+                )
+            ]
+            + (
+                [
+                    click.option(
+                        "-v",
+                        "--verbose",
+                        is_flag=True,
+                        help="Enable verbose logging (DEBUG level).",
+                        callback=read_verbosity(logging.DEBUG),
+                        expose_value=False,
+                        cls=CLIMutex,
+                        not_required_if=["quiet"],
+                    ),
+                    click.option(
+                        "-q",
+                        "--quiet",
+                        is_flag=True,
+                        help="Enable quiet logging (WARNING level).",
+                        callback=read_verbosity(logging.WARNING),
+                        expose_value=False,
+                        cls=CLIMutex,
+                        not_required_if=["verbose"],
+                    ),
+                    click.option(
+                        "-c",
+                        "--config",
+                        type=click.Path(exists=True, dir_okay=False),
+                        help="Path to a custom config file to load instead of the default (defaults to assets/cfg/default.yml).",
+                        callback=read_config,
+                        expose_value=False,
+                    ),
+                    click.option(
+                        "-l",
+                        "--log-file",
+                        type=click.Path(dir_okay=False),
+                        help="Specify the path where the RotatingFileHandler will write its outputs.",
+                        callback=read_log_file,
+                        expose_value=False,
+                    ),
+                ]
+                if grp is None
+                else []
+            )
+            + [
+                pass_context,
+            ]
+        )
 
         def wrapper(ctx: click.Context, *args, **kwargs):
             if default is not None and ctx.invoked_subcommand is None:
