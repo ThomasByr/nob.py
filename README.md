@@ -19,6 +19,9 @@ uv add git+https://github.com/ThomasByr/nob.py --tag v0.1.0
 
 ## Usage
 
+> [!Important]
+> Decorators order matters.
+
 ```py
 import logging
 
@@ -27,7 +30,7 @@ from nob import cli
 
 @cli.opt("--name", type=str, required=True, help="Greet someone.")
 @cli.cmd()
-def hello(lg: logging.Logger, name: str | None = None):
+def hello(lg: logging.Logger, name: str):
     lg.info("Hello %s", name or "")
 
 
