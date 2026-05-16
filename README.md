@@ -99,6 +99,16 @@ git clone git@github.com:ThomasByr/nob.py nob
     cargo install --locked just just-lsp
     ```
 
+    List all available recipes by typing `just`.
+
+3. Sync the codebase dependencies
+
+    Without explicit `--all-extras` syncing, some recipes will not evaluate on optional dependencies and functionalities.
+
+    ```sh
+    just sync
+    ```
+
 **Run the following recipes before committing.**
 
 To format the code with [ruff](https://docs.astral.sh/ruff/):
@@ -118,6 +128,10 @@ Optionally write unit-tests in the ./tests/ or ./integration/ directory using [p
 ```sh
 just test
 ```
+
+> [!TIP]
+> All in one command: `just sync format check ty test`.<br>
+> Or install pre-commit hooks: `just init`.
 
 </details>
 
