@@ -133,7 +133,7 @@ def grp(
             )
             + [
                 click.pass_context,
-                pass_config,
+                # pass_config,
             ]
         )
 
