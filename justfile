@@ -7,6 +7,9 @@ alias c := compile
 
 alias agents_md := claude_md
 
+alias tests := test
+alias t := test
+
 alias f := format
 
 default:
