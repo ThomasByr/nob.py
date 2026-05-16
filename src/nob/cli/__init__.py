@@ -132,7 +132,8 @@ def grp(
                 else []
             )
             + [
-                pass_context,
+                click.pass_context,
+                pass_config,
             ]
         )
 
@@ -157,15 +158,18 @@ def cmd(grp: click.RichGroup | None = None):
     """
     entity = grp or click
 
-    def wrapper(func: Callable[P, R]):
-        @entity.command(
-            name=(name := func.__name__),  # ty:ignore[unresolved-attribute]
-            help=func.__doc__,
-            context_settings={"help_option_names": ["-h", "--help"]},
-        )
-        @click.pass_context
-        @pass_config
-        def runner(cfg: Config, ctx: click.Context, **kwargs):
+    def inner(func: Callable[P, R]):
+        dec = [
+            entity.command(
+                name=(name := func.__name__),  # ty:ignore[unresolved-attribute]
+                help=func.__doc__,
+                context_settings={"help_option_names": ["-h", "--help"]},
+            ),
+            click.pass_context,
+            pass_config,
+        ]
+
+        def wrapper(cfg: Config, ctx: click.Context, **kwargs):
             import inspect
 
             from nob.logging import init_handler
@@ -186,10 +190,11 @@ def cmd(grp: click.RichGroup | None = None):
 
             return func(**kw)  # ty:ignore[missing-argument]
 
-        return runner
+        for d in reversed(dec):
+            wrapper = d(wrapper)  # ty:ignore[invalid-assignment, invalid-argument-type]
+        return wrapper
 
-    install_rich_traceback()
-    return wrapper
+    return inner
 
 
 opt = click.option
