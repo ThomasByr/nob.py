@@ -60,6 +60,51 @@ def install_rich_traceback():
     )
 
 
+def add_config_options(grp: click.RichGroup | None):
+    return (
+        [
+            click.option(
+                "-v",
+                "--verbose",
+                is_flag=True,
+                help="Enable verbose logging (DEBUG level).",
+                callback=read_verbosity(logging.DEBUG),
+                expose_value=False,
+                cls=CLIMutex,
+                not_required_if=["quiet"],
+            ),
+            click.option(
+                "-q",
+                "--quiet",
+                is_flag=True,
+                help="Enable quiet logging (WARNING level).",
+                callback=read_verbosity(logging.WARNING),
+                expose_value=False,
+                cls=CLIMutex,
+                not_required_if=["verbose"],
+            ),
+            click.option(
+                "-c",
+                "--config",
+                type=click.Path(exists=True, dir_okay=False),
+                help="Path to a custom config file to load instead of the default (defaults to assets/cfg/default.yml).",
+                callback=read_config,
+                expose_value=False,
+            ),
+            click.option(
+                "-l",
+                "--log-file",
+                type=click.Path(dir_okay=False),
+                help="Specify the path where the RotatingFileHandler will write its outputs.",
+                callback=read_log_file,
+                expose_value=False,
+            ),
+        ]
+        if grp is None
+        else []
+    )
+
+
 def grp(
     grp: click.RichGroup | None = None,
     default: Callable[[], click.RichCommand] | None = None,
@@ -89,51 +134,9 @@ def grp(
                     invoke_without_command=default is not None,
                 )
             ]
-            + (
-                [
-                    click.option(
-                        "-v",
-                        "--verbose",
-                        is_flag=True,
-                        help="Enable verbose logging (DEBUG level).",
-                        callback=read_verbosity(logging.DEBUG),
-                        expose_value=False,
-                        cls=CLIMutex,
-                        not_required_if=["quiet"],
-                    ),
-                    click.option(
-                        "-q",
-                        "--quiet",
-                        is_flag=True,
-                        help="Enable quiet logging (WARNING level).",
-                        callback=read_verbosity(logging.WARNING),
-                        expose_value=False,
-                        cls=CLIMutex,
-                        not_required_if=["verbose"],
-                    ),
-                    click.option(
-                        "-c",
-                        "--config",
-                        type=click.Path(exists=True, dir_okay=False),
-                        help="Path to a custom config file to load instead of the default (defaults to assets/cfg/default.yml).",
-                        callback=read_config,
-                        expose_value=False,
-                    ),
-                    click.option(
-                        "-l",
-                        "--log-file",
-                        type=click.Path(dir_okay=False),
-                        help="Specify the path where the RotatingFileHandler will write its outputs.",
-                        callback=read_log_file,
-                        expose_value=False,
-                    ),
-                ]
-                if grp is None
-                else []
-            )
+            + add_config_options(grp)
             + [
                 click.pass_context,
-                # pass_config,
             ]
         )
 
@@ -143,13 +146,13 @@ def grp(
             return main(*args, **kwargs)
 
         for d in reversed(dec):
-            wrapper = d(wrapper)  # ty:ignore[invalid-assignment]
+            wrapper = d(wrapper)
         return wrapper
 
     return inner  # ty:ignore[invalid-return-type]
 
 
-def cmd(grp: click.RichGroup | None = None):
+def cmd(grp: click.RichGroup | None = None) -> click.RichCommand:
     """Decorator to create a command. Can be attached to a group.\\
     Adds the following parameters to the command if they are present in the function signature or if the function accepts `**kwargs`:
     - `cfg`: The Config object `nob.cli.config.Config`
@@ -159,15 +162,20 @@ def cmd(grp: click.RichGroup | None = None):
     entity = grp or click
 
     def inner(func: Callable[P, R]):
-        dec = [
-            entity.command(
-                name=(name := func.__name__),  # ty:ignore[unresolved-attribute]
-                help=func.__doc__,
-                context_settings={"help_option_names": ["-h", "--help"]},
-            ),
-            click.pass_context,
-            pass_config,
-        ]
+        dec = (
+            [
+                entity.command(
+                    name=(name := func.__name__),  # ty:ignore[unresolved-attribute]
+                    help=func.__doc__,
+                    context_settings={"help_option_names": ["-h", "--help"]},
+                ),
+            ]
+            + add_config_options(grp)
+            + [
+                click.pass_context,
+                pass_config,
+            ]
+        )
 
         def wrapper(cfg: Config, ctx: click.Context, **kwargs):
             import inspect
@@ -191,10 +199,10 @@ def cmd(grp: click.RichGroup | None = None):
             return func(**kw)  # ty:ignore[missing-argument]
 
         for d in reversed(dec):
-            wrapper = d(wrapper)  # ty:ignore[invalid-assignment, invalid-argument-type]
+            wrapper = d(wrapper)
         return wrapper
 
-    return inner
+    return inner  # ty:ignore[invalid-return-type]
 
 
 opt = click.option
