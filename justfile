@@ -1,6 +1,8 @@
 set windows-shell := ["pwsh", "-NoLogo", "-NoProfileLoadTime", "-Command"]
 set script-interpreter := ["uv", "run", "python"]
 
+alias s := sync
+
 alias build := compile
 alias b := compile
 alias c := compile
@@ -12,8 +14,18 @@ alias t := test
 
 alias f := format
 
+alias i := init
+
+alias pr := pre
+alias p := pre
+
 default:
     @just --list --unsorted
+
+[group("Build")]
+[doc("Syncs with --all-extras")]
+sync:
+    uv sync --all-extras
 
 [group("Build")]
 [doc("Compile Python code to bytecode")]
@@ -54,6 +66,16 @@ check:
 [doc("Run ty type checking")]
 ty:
     uvx ty check --exclude src/libs
+
+[group("Pre-commit")]
+[doc("Install developer tools")]
+init: sync
+    uvx pre-commit install
+
+[group("Pre-commit")]
+[doc("Run all pre-commit files")]
+pre:
+    uvx pre-commit run --all-files
 
 [group("Doc")]
 [doc("Display README.md in terminal")]
