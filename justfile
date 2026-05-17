@@ -87,12 +87,28 @@ pc-run:
     uvx pre-commit run --all-files
 
 [group("Pre-commit")]
+[doc("Check whether all files are formatted or not. Hides progress.")]
+[private]
+pc-entry-format-check:
+    uvx --no-progress ruff format --check
+
+[group("Pre-commit")]
+[doc("Check whether import order is respected or not. Hides progress.")]
+[private]
+pc-entry-import-order-check:
+    uvx --no-progress ruff check --select I
+
+[group("Pre-commit")]
+[doc("Check whether static typing passes or not. Hides progress.")]
+[private]
+pc-entry-ty-typing-check:
+    uvx --no-progress ty check --no-progress
+
+[group("Pre-commit")]
 [doc("The command to run in pre-commit hooks")]
 [private]
-pc-entry:
-    uvx ruff format --check
-    uvx ruff check --select I
-    uvx ty check
+[parallel]
+pc-entry: pc-entry-format-check pc-entry-import-order-check pc-entry-ty-typing-check
 
 [group("Doc")]
 [doc("Display README.md in terminal")]
