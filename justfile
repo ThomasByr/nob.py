@@ -90,8 +90,8 @@ pc-run:
 [doc("The command to run in pre-commit hooks")]
 [private]
 pc-entry:
-    - uvx ruff format --check
-    - uvx ruff check --select I
+    uvx ruff format --check
+    uvx ruff check --select I
     uvx ty check
 
 [group("Doc")]
