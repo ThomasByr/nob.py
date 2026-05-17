@@ -14,10 +14,14 @@ alias t := test
 
 alias f := format
 
-alias i := init
+alias pc-init := pc-install
+alias pci := pc-install
 
-alias pr := pre
-alias p := pre
+alias pc-remove := pc-uninstall
+alias pc-rm := pc-uninstall
+alias pcu := pc-uninstall
+
+alias pcr := pc-run
 
 default:
     @just --list --unsorted
@@ -68,13 +72,18 @@ ty:
     uvx ty check --exclude src/libs
 
 [group("Pre-commit")]
-[doc("Install developer tools")]
-init: sync
+[doc("Install the pre-commit hooks file")]
+pc-install:
     uvx pre-commit install
 
 [group("Pre-commit")]
+[doc("Uninstall pre-commits hooks entirely")]
+pc-uninstall:
+    uvx pre-commit uninstall
+
+[group("Pre-commit")]
 [doc("Run all pre-commit files")]
-pre:
+pc-run:
     uvx pre-commit run --all-files
 
 [group("Doc")]
