@@ -27,7 +27,7 @@ default:
     @just --list --unsorted
 
 [group("Build")]
-[doc("Syncs with --all-extras")]
+[doc("Sync with --all-extras")]
 sync:
     uv sync --all-extras
 
@@ -64,12 +64,12 @@ format:
 [group("Lint")]
 [doc("Run linting with ruff")]
 check:
-    uvx ruff check --exclude src/libs
+    uvx ruff check
 
 [group("Lint")]
 [doc("Run ty type checking")]
 ty:
-    uvx ty check --exclude src/libs
+    uvx ty check
 
 [group("Pre-commit")]
 [doc("Install the pre-commit hooks file")]
@@ -85,6 +85,14 @@ pc-uninstall:
 [doc("Run all pre-commit files")]
 pc-run:
     uvx pre-commit run --all-files
+
+[group("Pre-commit")]
+[doc("The command to run in pre-commit hooks")]
+[private]
+pc-entry:
+    - uvx ruff format --check
+    - uvx ruff check --select I
+    uvx ty check
 
 [group("Doc")]
 [doc("Display README.md in terminal")]
