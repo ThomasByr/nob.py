@@ -12,7 +12,7 @@ repos:
     hooks:
     -   id: dev
         name: Development
-        entry: just sync format check ty test
+        entry: just format check ty test
         language: unsupported
         pass_filenames: false
         require_serial: true
