@@ -115,27 +115,15 @@ Then:
 
 **Run the following recipes before committing.**
 
-To format the code with [ruff](https://docs.astral.sh/ruff/):
+We (I) work with [ruff](https://docs.astral.sh/ruff/), [ty](https://docs.astral.sh/ty/) and [pytest](https://docs.pytest.org/en/stable/).
 
 ```sh
-just format
-```
-
-To perform both linting check with [ruff](https://docs.astral.sh/ruff/) and static type checking with [ty](https://docs.astral.sh/ty/):
-
-```sh
-just check ty
-```
-
-Optionally write unit-tests in the ./tests/ or ./integration/ directory using [pytest](https://docs.pytest.org/en/stable/) and perform testing with:
-
-```sh
-just test
+just format check ty test
 ```
 
 > [!TIP]
-> All in one command: `just sync format check ty test`.<br>
-> Or install pre-commit hooks: `just init`.
+> Install pre-commit hooks: `just pc-install`.<br>
+> To keep hooks somewhat fast enough, they will <u>only</u> check (not forcibly fix) for typing and formatting.
 
 ## TODOs
 
