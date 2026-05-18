@@ -46,8 +46,9 @@ class CustomTimeColumn(ProgressColumn):
     # Only refresh twice a second to prevent jitter
     max_refresh = 0.5
 
-    def __init__(self, style: str | Style) -> None:
+    def __init__(self, style: str | Style, known_total: bool) -> None:
         self.style = style
+        self.__known_total = known_total
         super().__init__()
 
     def render(self, task: "Task") -> Text:
@@ -55,7 +56,9 @@ class CustomTimeColumn(ProgressColumn):
         remaining = task.time_remaining
         elapsed_delta = "-:--:--" if elapsed is None else str(timedelta(seconds=int(elapsed)))
         remaining_delta = "-:--:--" if remaining is None else str(timedelta(seconds=int(remaining)))
-        return Text(f"{elapsed_delta} • {remaining_delta}", style=self.style)
+        if self.__known_total:
+            return Text(f"{elapsed_delta} • {remaining_delta}", style=self.style)
+        return Text(f"{elapsed_delta}", style=self.style)
 
 
 class BatchesProcessedColumn(ProgressColumn):
@@ -102,12 +105,12 @@ def default_columns(known_total: bool = True) -> list[ProgressColumn]:
             ),
         ]
         + (
-            [BatchesProcessedColumn(style=theme.batch_progress)]
+            [BatchesProcessedColumn(theme.batch_progress)]
             if known_total
-            else [ProcessedColumn(style=theme.batch_progress)]
+            else [ProcessedColumn(theme.batch_progress)]
         )
         + [
-            CustomTimeColumn(style=theme.time),
-            ProcessingSpeedColumn(style=theme.processing_speed),
+            CustomTimeColumn(theme.time, known_total),
+            ProcessingSpeedColumn(theme.processing_speed),
         ]
     )
