@@ -67,7 +67,7 @@ def add_config_options(grp: click.RichGroup | None):
                 "-v",
                 "--verbose",
                 is_flag=True,
-                help="Enable verbose logging (DEBUG level).",
+                help="Enable verbose logging (DEBUG min level).",
                 callback=read_verbosity(logging.DEBUG),
                 expose_value=False,
                 cls=CLIMutex,
@@ -77,7 +77,7 @@ def add_config_options(grp: click.RichGroup | None):
                 "-q",
                 "--quiet",
                 is_flag=True,
-                help="Enable quiet logging (WARNING level).",
+                help="Enable quiet logging (WARNING min level).",
                 callback=read_verbosity(logging.WARNING),
                 expose_value=False,
                 cls=CLIMutex,
@@ -202,6 +202,7 @@ def cmd(grp: click.RichGroup | None = None) -> click.RichCommand:
             wrapper = d(wrapper)
         return wrapper
 
+    install_rich_traceback()
     return inner  # ty:ignore[invalid-return-type]
 
 
