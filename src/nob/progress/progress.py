@@ -67,7 +67,7 @@ class BatchesProcessedColumn(ProgressColumn):
         super().__init__()
 
     def render(self, task: "Task") -> RenderableType:
-        total = task.total if task.total != float("inf") else "--"
+        total = int(task.total) if task.total is not None and task.total != float("inf") else "--"
         return Text(f"{int(task.completed)}/{total}", style=self.style)
 
 
