@@ -3,7 +3,7 @@ from typing import TypeVar
 
 from rich.progress import Console, Progress
 
-from .progress import default_columns
+from .progress import create_columns
 
 __all__ = ["track", "progress"]
 
@@ -14,6 +14,9 @@ def track(
     sequence: Iterable[T],
     description: str = "Working...",
     total: float | None = -1,
+    show_percentage: bool = False,
+    hide_time: bool = False,
+    hide_processing_speed: bool = False,
     completed: int = 0,
     auto_refresh: bool = True,
     transient: bool = False,
@@ -31,6 +34,9 @@ def track(
         sequence (Iterable[T]): Values you wish to iterate over and track progress.
         description (str, optional): Description of task show next to progress bar. Defaults to "Working".
         total: (float, optional): Total number of steps. Set to `-1` to use default, deactivate with `None`. Default is len(sequence).
+        show_percentage (bool, optional): To show percentage instead of `completed/total`. Can be useful for large items. Defaults to False.
+        hide_time (bool, optional): Whether to hide the time column. Defaults to False.
+        hide_processing_speed (bool, optional): Whether to hide the processing speed column. Defaults to False.
         completed (int, optional): Number of steps completed so far. Defaults to 0.
         auto_refresh (bool, optional): Automatic refresh, disable to force a refresh after each iteration. Default is True.
         transient: (bool, optional): Clear the progress on exit. Defaults to False.
@@ -45,7 +51,7 @@ def track(
     """
 
     progress = Progress(
-        *default_columns(total is not None),
+        *create_columns(total is not None, show_percentage, hide_time, hide_processing_speed),
         auto_refresh=auto_refresh,
         console=console,
         transient=transient,
@@ -66,6 +72,9 @@ def track(
 
 def progress(
     known_total: bool = True,
+    show_percentage: bool = False,
+    hide_time: bool = False,
+    hide_processing_speed: bool = False,
     auto_refresh: bool = True,
     transient: bool = False,
     get_time: Callable[[], float] | None = None,
@@ -77,6 +86,9 @@ def progress(
 
     Args:
         known_total (bool, optional): If the program will assure the total number of elements to track progress for will be available when the tracking starts. Defaults to True.
+        show_percentage (bool, optional): To show percentage instead of `completed/total`. Can be useful for large items. Defaults to False.
+        hide_time (bool, optional): Whether to hide the time column. Defaults to False.
+        hide_processing_speed (bool, optional): Whether to hide the processing speed column. Defaults to False.
         auto_refresh (bool, optional): Automatic refresh, disable to force a refresh after each iteration. Defaults to True.
         transient (bool, optional): Clear the progress on exit. Defaults to False.
         get_time (Callable[[], float] | None, optional): A callable that gets the current time, or None to use Console.get_time. Defaults to None.
@@ -88,7 +100,7 @@ def progress(
         Progress: A Progress object with custom colors and columns.
     """
     return Progress(
-        *default_columns(known_total),
+        *create_columns(known_total, show_percentage, hide_time, hide_processing_speed),
         auto_refresh=auto_refresh,
         console=console,
         transient=transient,

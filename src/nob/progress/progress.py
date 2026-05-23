@@ -10,6 +10,7 @@ from rich.progress import (
 )
 from rich.style import Style
 from rich.text import Text
+from typing_extensions import override
 
 
 @dataclass
@@ -51,6 +52,7 @@ class CustomTimeColumn(ProgressColumn):
         self.__known_total = known_total
         super().__init__()
 
+    @override
     def render(self, task: "Task") -> Text:
         elapsed = task.finished_time if task.finished else task.elapsed
         remaining = task.time_remaining
@@ -66,6 +68,7 @@ class BatchesProcessedColumn(ProgressColumn):
         self.style = style
         super().__init__()
 
+    @override
     def render(self, task: "Task") -> RenderableType:
         total = int(task.total) if task.total is not None and task.total != float("inf") else "--"
         return Text(f"{int(task.completed)}/{total}", style=self.style)
@@ -76,8 +79,20 @@ class ProcessedColumn(ProgressColumn):
         self.style = style
         super().__init__()
 
+    @override
     def render(self, task: "Task") -> RenderableType:
         return Text(f"{int(task.completed)}", style=self.style)
+
+
+class PercentageColumn(ProgressColumn):
+    def __init__(self, style: str | Style):
+        self.style = style
+        super().__init__()
+
+    @override
+    def render(self, task: "Task") -> RenderableType:
+        percentage = f"{task.percentage:>.2f}%" if task.percentage is not None else "0.00%"
+        return Text(percentage, style=self.style)
 
 
 class ProcessingSpeedColumn(ProgressColumn):
@@ -85,6 +100,7 @@ class ProcessingSpeedColumn(ProgressColumn):
         self.style = style
         super().__init__()
 
+    @override
     def render(self, task: "Task") -> RenderableType:
         task_speed = f"{task.speed:>.2f}" if task.speed is not None else "0.00"
         return Text(f"{task_speed}it/s", style=self.style)
@@ -93,7 +109,41 @@ class ProcessingSpeedColumn(ProgressColumn):
 theme = RichProgressBarTheme()
 
 
-def default_columns(known_total: bool = True) -> list[ProgressColumn]:
+def create_columns(
+    known_total: bool = True,
+    show_percentage: bool = False,
+    hide_time: bool = False,
+    hide_processing_speed: bool = False,
+) -> list[ProgressColumn]:
+    """Create a list of defaults columns for your `rich.progress.Progress` object.
+
+    Args:
+        known_total (bool, optional): If the total number of items will be known when the progress starts. Defaults to True.
+        show_percentage (bool, optional): To show percentage instead of `completed/total`. Can be useful for large items. Defaults to False.
+        hide_time (bool, optional): Whether to hide the time column. Defaults to False.
+        hide_processing_speed (bool, optional): Whether to hide the processing speed column. Defaults to False.
+
+    Returns:
+        list[ProgressColumn]: _description_
+    """
+
+    def get_batches_column():
+        if show_percentage:
+            return [PercentageColumn(theme.metrics)]
+        if known_total:
+            return [BatchesProcessedColumn(theme.batch_progress)]
+        return [ProcessedColumn(theme.batch_progress)]
+
+    def get_time_column():
+        if hide_time:
+            return []
+        return [CustomTimeColumn(theme.time, known_total)]
+
+    def get_processing_speed_column():
+        if hide_processing_speed:
+            return []
+        return [ProcessingSpeedColumn(theme.processing_speed)]
+
     return (
         [
             TextColumn("[progress.description]{task.description}"),
@@ -104,13 +154,7 @@ def default_columns(known_total: bool = True) -> list[ProgressColumn]:
                 pulse_style=theme.progress_bar_pulse,
             ),
         ]
-        + (
-            [BatchesProcessedColumn(theme.batch_progress)]
-            if known_total
-            else [ProcessedColumn(theme.batch_progress)]
-        )
-        + [
-            CustomTimeColumn(theme.time, known_total),
-            ProcessingSpeedColumn(theme.processing_speed),
-        ]
+        + get_batches_column()
+        + get_time_column()
+        + get_processing_speed_column()
     )
