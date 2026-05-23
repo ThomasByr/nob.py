@@ -39,17 +39,14 @@ pip install git+https://github.com/ThomasByr/nob.py@v0.1.0
 
 ## Usage
 
-> [!Important]
-> Decorators order matters.
-
 ```py
 import logging
 
 from nob import cli
 
 
-@cli.opt("--name", required=True, help="Greet someone.")
 @cli.cmd()
+@cli.opt("--name", required=True, help="Greet someone.")
 def hello(lg: logging.Logger, name: str):
     lg.info("Hello %s", name)
 
@@ -61,10 +58,10 @@ if __name__ == "__main__":
 run with:
 
 ```sh
-uv run <file.py> --name Eric
+uv run <file.py> --name "Eric Norbert"
 ```
 
-Get more examples in the [Wiki](https://github.com/ThomasByr/nob.py/wiki/).
+Get more usage examples in the [Wiki](https://github.com/ThomasByr/nob.py/wiki/).
 
 ## Contributing
 
