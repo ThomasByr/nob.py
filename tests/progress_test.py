@@ -65,3 +65,70 @@ def test_auto_total(capsys: CaptureFixture[str]):
         pass
     captured = capsys.readouterr()
     assert "35/35" in captured.out
+
+
+def test_show_percentage(capsys: CaptureFixture[str]):
+    for _ in track(range(42), show_percentage=True):
+        pass
+    captured = capsys.readouterr()
+    assert "100.00%" in captured.out
+
+    bar = progress(show_percentage=True)
+    task = bar.add_task("", total=7)
+    with bar:
+        bar.advance(task)
+    captured = capsys.readouterr()
+    assert "14.29%" in captured.out
+
+    for _ in track(range(42), total=None, show_percentage=True):
+        pass
+    captured = capsys.readouterr()
+    assert "100.00%" in captured.out
+
+    for _ in track(range(42), total=None, show_percentage=False):
+        pass
+    captured = capsys.readouterr()
+    assert "42" in captured.out and "%" not in captured.out
+
+    for _ in track(range(42), total=121, show_percentage=False):
+        pass
+    captured = capsys.readouterr()
+    assert "42/121" in captured.out and "%" not in captured.out
+
+
+def test_hide_time(capsys: CaptureFixture[str]):
+    for _ in track(range(42), hide_time=True):
+        pass
+    captured = capsys.readouterr()
+    assert "•" not in captured.out
+
+    bar = progress(hide_time=True)
+    task = bar.add_task("")
+    with bar:
+        bar.advance(task)
+    captured = capsys.readouterr()
+    assert "•" not in captured.out
+
+    for _ in track(range(42), hide_time=False):
+        pass
+    captured = capsys.readouterr()
+    assert "•" in captured.out
+
+
+def test_hide_processing_speed(capsys: CaptureFixture[str]):
+    for _ in track(range(42), hide_processing_speed=True):
+        pass
+    captured = capsys.readouterr()
+    assert "it/s" not in captured.out
+
+    bar = progress(hide_processing_speed=True)
+    task = bar.add_task("")
+    with bar:
+        bar.advance(task)
+    captured = capsys.readouterr()
+    assert "it/s" not in captured.out
+
+    for _ in track(range(42), hide_processing_speed=False):
+        pass
+    captured = capsys.readouterr()
+    assert "it/s" in captured.out
