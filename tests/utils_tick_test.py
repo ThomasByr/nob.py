@@ -4,6 +4,7 @@ import pytest
 
 from nob.utils.tick import tick
 
+# Tick counting bellow 1*mean_over are less reliable
 EPSILON = 8e-3  # Tolerances for sleep inaccuracy and slow test environments
 
 
@@ -79,4 +80,4 @@ def test_tick_counter_rate():
     for _ in tick(range(16), 50):
         pass
     rate = tick.counter.rate()  # ty:ignore[unresolved-attribute]
-    assert rate == pytest.approx(50, abs=10.0)
+    assert rate == pytest.approx(50, abs=1)  # Allow some more tolerance
