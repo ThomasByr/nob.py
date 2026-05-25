@@ -115,7 +115,7 @@ class NamedSemaphore:
                 `handle_existence` to `RAISE_IF_NOT_EXISTS`.
         """
         # Save the input parameters
-        self.__name = "/" + name.removeprefix("/") if isinstance(name, str) else ""
+        self.__name = "/" + name.lstrip("/") if isinstance(name, str) else ""
         self.__unlink_on_delete = unlink_on_delete
         self.__linked_existing_semaphore: bool | None = None
         self.logger = logging.getLogger("sem")
