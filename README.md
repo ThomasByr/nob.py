@@ -1,5 +1,10 @@
 # Nob.py
 
+[![Python version](https://img.shields.io/badge/Python-3.11+-blue?logo=python&logoColor=white)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?logo=gitbook&logoColor=white)](https://opensource.org/licenses/MIT)
+[![OS](https://img.shields.io/badge/OS-Cross--platform-lightgrey?logo=linux&logoColor=white)](https://github.com/ThomasByr/nob.py)
+[![GitHub profile](https://img.shields.io/badge/GitHub-ThomasByr-181717?logo=github&logoColor=white)](https://github.com/ThomasByr)
+
 > Reasonable defaults for [Click](https://click.palletsprojects.com/en/stable/) CLI applications with rich logging...<br>
 > ... and additional goodies.
 
