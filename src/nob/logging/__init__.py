@@ -10,7 +10,7 @@ def mute_logger(*names: str) -> None:
     """Mute the specified logger by setting its level to WARNING.
 
     Args:
-        name (str): The name of the logger to mute.
+        names (str): The names of the logger to mute.
     """
     for name in names:
         logger = logging.getLogger(name)
@@ -23,7 +23,7 @@ def init_handler(log_level: int = logging.INFO, log_file: str | None = None):
 
     Args:
         log_level (int, optional): The logging level to set. Defaults to logging.INFO.
-        log_file (str, optional): The path where logs will be written. If None, logs will not be written to a file.
+        log_file (str, optional): The path where logs will be written (using `RotatingFileHandler`). If None, logs will not be written to a file.
     """
     handlers: list = [RichHandler()]  # modifies the record first for RotatingFileHandler
     if log_file:
@@ -35,6 +35,3 @@ def init_handler(log_level: int = logging.INFO, log_file: str | None = None):
         handlers=handlers,
         force=True,
     )
-
-    # mute overly verbose loggers
-    mute_logger("urllib3", "rich")
