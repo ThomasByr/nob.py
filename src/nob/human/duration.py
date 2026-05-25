@@ -6,7 +6,7 @@ __all__ = ["HumanDuration"]
 
 SPEC = (
     (1e3, 1e3, "ns", 1),
-    (1e3, 1e3, "µs", 1),  # uses non-ASCII “µs” suffix.
+    (1e3, 1e3, "µs", 1),  # Uses non-ASCII “µs” suffix
     (1e3, 1e3, "ms", 1),
     (60.0, 1.0, "s", 2),
     # 1:01.1 (minutes in code, 1 decimal).
