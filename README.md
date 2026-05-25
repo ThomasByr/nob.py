@@ -13,6 +13,19 @@
 ## Installation
 
 ```sh
+uv add nob.py
+```
+
+Or:
+
+```sh
+pip install nob.py
+```
+
+<details>
+<summary>Install from GitHub</summary>
+
+```sh
 uv add git+https://github.com/ThomasByr/nob.py --branch main
 ```
 
@@ -35,6 +48,7 @@ You may directly also use `@` with a tag, for example:
 pip install git+https://github.com/ThomasByr/nob.py@v0.1.0
 ```
 
+</details>
 </details>
 
 ## Usage
@@ -124,4 +138,4 @@ just format check ty test
 
 ## TODOs
 
-- [ ] workflow to publish to PyPI
+- [x] workflow to publish to PyPI
