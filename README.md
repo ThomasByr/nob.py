@@ -2,6 +2,7 @@
 
 [![Python version](https://img.shields.io/badge/Python-3.11+-blue?logo=python&logoColor=white)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?logo=gitbook&logoColor=white)](https://opensource.org/licenses/MIT)
+[![Read the wiki](https://img.shields.io/badge/Doc-Wiki-green?logo=readthedocs&logoColor=white)](https://github.com/ThomasByr/nob.py/wiki)
 [![OS](https://img.shields.io/badge/OS-Cross--platform-lightgrey?logo=linux&logoColor=white)](https://github.com/ThomasByr/nob.py)
 [![GitHub profile](https://img.shields.io/badge/GitHub-ThomasByr-181717?logo=github&logoColor=white)](https://github.com/ThomasByr)
 
@@ -58,6 +59,9 @@ pip install git+https://github.com/ThomasByr/nob.py@v0.1.0
 
 ## Usage
 
+> [!Note]
+> Get more usage examples in the [Wiki](https://github.com/ThomasByr/nob.py/wiki/).
+
 ```py
 import logging
 
@@ -80,7 +84,7 @@ run with:
 uv run <file.py> --name "Eric Norbert"
 ```
 
-Get more usage examples in the [Wiki](https://github.com/ThomasByr/nob.py/wiki/).
+Replace `uv run` with `python` once your environment is activated - if you don't use uv.
 
 ## Contributing
 
