@@ -1,5 +1,5 @@
 [project]
-name = "nob"
+name = "nob.py"
 version = "0.1.0"
 description = "Reasonable defaults for Click CLI applications."
 readme = "README.md"
@@ -28,6 +28,9 @@ ipc = [
 [build-system]
 requires = ["uv_build>=0.11.2,<0.12.0"]
 build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "nob"
 
 [tool.ruff]
 # Enable the pycodestyle (`E`) and Pyflakes (`F`) rules by default.
