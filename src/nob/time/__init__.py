@@ -1,6 +1,7 @@
+from collections.abc import Callable, Iterable
 from contextlib import AbstractContextManager
 from time import perf_counter, sleep
-from typing import Callable, Iterable, TypeVar, overload
+from typing import ParamSpec, TypeVar, overload
 
 from .about import Handle, HandleResult, HandleStats, context_timing
 from .tick import IntoTimeDelta, TickRateCounter
@@ -8,17 +9,18 @@ from .tick import IntoTimeDelta, TickRateCounter
 __all__ = ["about", "tick"]
 
 T = TypeVar("T")
+P = ParamSpec("P")
 
 
 @overload
-def about(func: Callable[..., T], *args, **kwargs) -> "HandleResult[T]": ...
+def about(func: Callable[P, T], *args: P.args, **kwargs: P.kwargs) -> "HandleResult[T]": ...
 @overload
 def about(it: Iterable[T]) -> "HandleStats": ...
 @overload
 def about() -> "AbstractContextManager[Handle]": ...
 
 
-def about(func_or_it: Callable[..., T] | Iterable[T] | None = None, *args, **kwargs):
+def about(func_or_it: Callable[P, T] | Iterable[T] | None = None, *args: P.args, **kwargs: P.kwargs):
     """Measure timing and throughput of code blocks, with beautiful
     human friendly representations.
 
@@ -73,7 +75,10 @@ def about(func_or_it: Callable[..., T] | Iterable[T] | None = None, *args, **kwa
 
 @overload
 def tick(
-    rate: int = 100, *, mean_over: IntoTimeDelta = 1, safe_counter: TickRateCounter | None = None
+    rate: int = 100,
+    *,
+    mean_over: IntoTimeDelta = 1,
+    safe_counter: TickRateCounter | None = None,
 ) -> None: ...
 @overload
 def tick(
