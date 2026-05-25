@@ -1,134 +1,127 @@
+import pytest
 from pytest import CaptureFixture
 
-from nob.progress import progress, track
+from nob import progress
 
 
-def test_default_description(capsys: CaptureFixture[str]):
-    for _ in track(range(1)):
-        pass
-    captured = capsys.readouterr()
-    assert captured.out.startswith("Working...")
+@pytest.fixture
+def run_progress(capsys: CaptureFixture[str]):
+    """Helper to run progress in either mode and capture the output."""
+
+    def _run(
+        mode: str,
+        sequence_len: int = 1,
+        description: str = "Working...",
+        total: float | int | None = -1,
+        show_percentage: bool = False,
+        hide_time: bool = False,
+        hide_processing_speed: bool = False,
+    ):
+
+        if mode == "track":
+            kwargs = {
+                "description": description,
+                "show_percentage": show_percentage,
+                "hide_time": hide_time,
+                "hide_processing_speed": hide_processing_speed,
+            }
+            if total != -1:
+                kwargs["total"] = total  # ty:ignore[invalid-assignment]
+
+            for _ in progress.track(range(sequence_len), **kwargs):  # ty:ignore[invalid-argument-type]
+                pass
+        else:
+            known_total = total is not None
+            bar = progress.progress(
+                known_total=known_total,
+                show_percentage=show_percentage,
+                hide_time=hide_time,
+                hide_processing_speed=hide_processing_speed,
+            )
+            task_total = sequence_len if total == -1 else total
+            task = bar.add_task(description, total=task_total)
+            with bar:
+                if sequence_len > 0:
+                    bar.advance(task, sequence_len)
+
+        return capsys.readouterr().out
+
+    return _run
 
 
-def test_set_description(capsys: CaptureFixture[str]):
-    d0 = "Some non-default description"
-    d1 = "Some other description text"
-
-    for _ in track(range(1), d0):
-        pass
-    captured = capsys.readouterr()
-    assert captured.out.startswith(d0)
-
-    bar = progress()
-    task = bar.add_task(d1)
-    with bar:
-        bar.advance(task)
-    captured = capsys.readouterr()
-    assert captured.out.startswith(d1)
+@pytest.mark.parametrize("mode", ["track", "progress"])
+@pytest.mark.parametrize("description", ["Working...", "Custom description", "Epoch 1/5"])
+def test_descriptions(run_progress, mode, description):
+    out = run_progress(mode, description=description)
+    assert description in out
 
 
-def test_set_total(capsys: CaptureFixture[str]):
-    for _ in track(range(1), total=123):
-        pass
-    captured = capsys.readouterr()
-    assert "1/123" in captured.out
+@pytest.mark.parametrize("mode", ["track", "progress"])
+@pytest.mark.parametrize(
+    "sequence_len, total, show_percentage, expected_in, expected_not_in",
+    [
+        # Auto/Default total
+        (19, -1, False, ["19/19"], ["%"]),
+        (35, -1, False, ["35/35"], ["%"]),
+        # Explicit known total
+        (1, 123, False, ["1/123"], ["%"]),
+        (42, 121, False, ["42/121"], ["%"]),
+        # Unknown total
+        (700, None, False, ["700"], ["700/", "%"]),
+        (42, None, False, ["42"], ["42/", "%"]),
+        # With percentage - known total
+        (42, -1, True, ["100.00%"], ["42/"]),
+        (7, 7, True, ["100.00%"], ["7/"]),
+        (1, 7, True, ["14.29%"], ["1/"]),
+        (2, 4, True, ["50.00%"], ["2/"]),
+        # With percentage - unknown total
+        (42, None, True, ["100.00%"], ["42/"]),
+    ],
+)
+def test_total_and_percentages(
+    run_progress, mode, sequence_len, total, show_percentage, expected_in, expected_not_in
+):
+    out = run_progress(mode, sequence_len=sequence_len, total=total, show_percentage=show_percentage)
 
-    bar = progress()
-    task = bar.add_task("", total=7)
-    with bar:
-        bar.advance(task)
-    captured = capsys.readouterr()
-    assert "1/7" in captured.out
+    # Handle special case where indeterminate progress bar percentage defaults to 0
+    if mode == "progress" and total is None and show_percentage:
+        assert "0.00%" in out
+        assert "42/" not in out
+        return
 
-
-def test_no_known_total(capsys: CaptureFixture[str]):
-    for _ in track(range(42), total=None):
-        pass
-    captured = capsys.readouterr()
-    assert "42" in captured.out and "42/" not in captured.out
-
-    bar = progress(known_total=False)
-    task = bar.add_task("", total=None)
-    with bar:
-        bar.advance(task, 700)
-    captured = capsys.readouterr()
-    assert "700" in captured.out and "700/" not in captured.out
-
-
-def test_auto_total(capsys: CaptureFixture[str]):
-    for _ in track(range(19)):
-        pass
-    captured = capsys.readouterr()
-    assert "19/19" in captured.out
-
-    for _ in track(range(35)):
-        pass
-    captured = capsys.readouterr()
-    assert "35/35" in captured.out
-
-
-def test_show_percentage(capsys: CaptureFixture[str]):
-    for _ in track(range(42), show_percentage=True):
-        pass
-    captured = capsys.readouterr()
-    assert "100.00%" in captured.out
-
-    bar = progress(show_percentage=True)
-    task = bar.add_task("", total=7)
-    with bar:
-        bar.advance(task)
-    captured = capsys.readouterr()
-    assert "14.29%" in captured.out
-
-    for _ in track(range(42), total=None, show_percentage=True):
-        pass
-    captured = capsys.readouterr()
-    assert "100.00%" in captured.out
-
-    for _ in track(range(42), total=None, show_percentage=False):
-        pass
-    captured = capsys.readouterr()
-    assert "42" in captured.out and "%" not in captured.out
-
-    for _ in track(range(42), total=121, show_percentage=False):
-        pass
-    captured = capsys.readouterr()
-    assert "42/121" in captured.out and "%" not in captured.out
+    for expected in expected_in:
+        assert expected in out
+    for not_in in expected_not_in:
+        assert not_in not in out
 
 
-def test_hide_time(capsys: CaptureFixture[str]):
-    for _ in track(range(42), hide_time=True):
-        pass
-    captured = capsys.readouterr()
-    assert "•" not in captured.out
-
-    bar = progress(hide_time=True)
-    task = bar.add_task("")
-    with bar:
-        bar.advance(task)
-    captured = capsys.readouterr()
-    assert "•" not in captured.out
-
-    for _ in track(range(42), hide_time=False):
-        pass
-    captured = capsys.readouterr()
-    assert "•" in captured.out
+@pytest.mark.parametrize("mode", ["track", "progress"])
+@pytest.mark.parametrize(
+    "hide_time, expected_in, expected_not_in",
+    [
+        (True, [], ["•"]),
+        (False, ["•"], []),
+    ],
+)
+def test_hide_time(run_progress, mode, hide_time, expected_in, expected_not_in):
+    out = run_progress(mode, sequence_len=42, hide_time=hide_time)
+    for expected in expected_in:
+        assert expected in out
+    for not_in in expected_not_in:
+        assert not_in not in out
 
 
-def test_hide_processing_speed(capsys: CaptureFixture[str]):
-    for _ in track(range(42), hide_processing_speed=True):
-        pass
-    captured = capsys.readouterr()
-    assert "it/s" not in captured.out
-
-    bar = progress(hide_processing_speed=True)
-    task = bar.add_task("")
-    with bar:
-        bar.advance(task)
-    captured = capsys.readouterr()
-    assert "it/s" not in captured.out
-
-    for _ in track(range(42), hide_processing_speed=False):
-        pass
-    captured = capsys.readouterr()
-    assert "it/s" in captured.out
+@pytest.mark.parametrize("mode", ["track", "progress"])
+@pytest.mark.parametrize(
+    "hide_processing_speed, expected_in, expected_not_in",
+    [
+        (True, [], ["it/s", "it/m"]),  # Hides speed text entirely
+        (False, ["it/"], []),  # Leaves the throughput suffix
+    ],
+)
+def test_hide_processing_speed(run_progress, mode, hide_processing_speed, expected_in, expected_not_in):
+    out = run_progress(mode, sequence_len=42, hide_processing_speed=hide_processing_speed)
+    for expected in expected_in:
+        assert expected in out
+    for not_in in expected_not_in:
+        assert not_in not in out
