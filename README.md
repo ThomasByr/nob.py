@@ -139,3 +139,4 @@ just format check ty test
 ## TODOs
 
 - [x] workflow to publish to PyPI
+- [ ] update the progress module to use human count and duration
