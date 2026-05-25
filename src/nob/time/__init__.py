@@ -99,6 +99,7 @@ def tick(
         sequence (Iterable[T] | int, optional): An optional iterable to wrap. If an integer is provided, it is treated as the rate and the function operates in standalone mode. Defaults to 100.
         rate (int, optional): Desired tick rate in ticks per second. Ignored if `sequence` is an integer. Defaults to 100.
         mean_over (IntoTimeDelta, optional): Time window to calculate the mean tick rate over. Defaults to 1 second.
+        safe_counter (TickRateCounter | None, optional): An optional `TickRateCounter` instance to use for tracking tick rates. If not provided, a new instance will be created and stored as an attribute on the function for standalone mode, or used directly for wrapping mode. Automated new instances creation are subject to bugs in some cases. Defaults to None.
 
     Returns:
         Iterable[T] | None: If `sequence` is provided, returns an iterable that yields items from `sequence` while maintaining the tick rate. If `sequence` is an integer, returns None and operates in standalone mode, where each call to `tick()` will sleep as necessary to maintain the tick rate.
