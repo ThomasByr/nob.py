@@ -12,6 +12,8 @@ from rich.style import Style
 from rich.text import Text
 from typing_extensions import override
 
+from .. import human
+
 
 @dataclass
 class RichProgressBarTheme:
@@ -102,8 +104,8 @@ class ProcessingSpeedColumn(ProgressColumn):
 
     @override
     def render(self, task: "Task") -> RenderableType:
-        task_speed = f"{task.speed:>.2f}" if task.speed is not None else "0.00"
-        return Text(f"{task_speed}it/s", style=self.style)
+        task_speed = human.throughput(task.speed).str() if task.speed is not None else "0.00it/s"
+        return Text(task_speed, style=self.style)
 
 
 theme = RichProgressBarTheme()
