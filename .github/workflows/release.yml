@@ -41,4 +41,4 @@ jobs:
           name: ${{ github.ref_name }}
           tag_name: ${{ github.ref_name }}
           body_path: CHANGELOG.md
-          files: dist/*
+          files: dist/nob*
