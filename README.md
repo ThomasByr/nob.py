@@ -1,6 +1,7 @@
 # Nob.py
 
 [![Python version](https://img.shields.io/badge/Python-3.11+-blue?logo=python&logoColor=white)](https://www.python.org/downloads/)
+[![PyPI version](https://img.shields.io/pypi/v/nob.py?logo=pypi&logoColor=white&label=PyPI)](https://pypi.python.org/pypi/nob.py/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?logo=gitbook&logoColor=white)](https://opensource.org/licenses/MIT)
 [![Read the wiki](https://img.shields.io/badge/Doc-Wiki-green?logo=readthedocs&logoColor=white)](https://github.com/ThomasByr/nob.py/wiki)
 [![OS](https://img.shields.io/badge/OS-Cross--platform-lightgrey?logo=linux&logoColor=white)](https://github.com/ThomasByr/nob.py)
