@@ -44,11 +44,11 @@ def about(func_or_it: Callable[..., T] | Iterable[T] | None = None, *args, **kwa
 
     timings = [0.0, 0.0]
 
-    # Use as a context manager.
+    # Use as a context manager
     if func_or_it is None:
         return context_timing(timings, Handle(timings))
 
-    # Use as a callable.
+    # Use as a callable
     if callable(func_or_it):
         with context_timing(timings):
             result = func_or_it(*args, **kwargs)  # ty:ignore[call-top-callable]
@@ -59,7 +59,7 @@ def about(func_or_it: Callable[..., T] | Iterable[T] | None = None, *args, **kwa
     except TypeError as e:
         raise UserWarning("param should be callable or iterable.") from e
 
-    # use as a counter/throughput iterator.
+    # Use as a counter/throughput iterator
     def it_closure():
         with context_timing(timings):
             # Iterators are iterable
