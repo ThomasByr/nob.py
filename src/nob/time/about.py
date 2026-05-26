@@ -1,3 +1,4 @@
+from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from time import perf_counter
 from typing import Generic, TypeVar
@@ -17,7 +18,7 @@ def context_timing(timings, handle=None):
 
 
 class Handle(object):
-    def __init__(self, timings):
+    def __init__(self, timings: list[float]):
         self.__timings = timings
 
     @property
@@ -44,7 +45,7 @@ class Handle(object):
 
 
 class HandleResult(Generic[T], Handle):
-    def __init__(self, timings, result: T):
+    def __init__(self, timings: list[float], result: T):
         super(HandleResult, self).__init__(timings)
         self.__result = result
 
@@ -59,10 +60,10 @@ class HandleResult(Generic[T], Handle):
         return self.__result
 
 
-class HandleStats(Handle):
-    def __init__(self, timings, it_closure):
+class HandleStats(Generic[T], Handle):
+    def __init__(self, timings: list[float], it_closure: Callable[[], Generator[T, None, None]]):
         super(HandleStats, self).__init__(timings)
-        self.__it = it_closure
+        self.__it = it_closure  # Has a .count attribute
 
     def __iter__(self):
         return self.__it()
@@ -76,7 +77,7 @@ class HandleStats(Handle):
             the current iteration count.
 
         """
-        return self.__it.count
+        return self.__it.count  # ty:ignore[unresolved-attribute]
 
     @property
     def count_human(self) -> HumanCount:
