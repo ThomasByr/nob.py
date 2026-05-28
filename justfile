@@ -7,8 +7,12 @@ alias build := compile
 alias b := compile
 alias c := compile
 
+alias release-it := release
+alias r := release
+
 alias agents_md := claude_md
 
+alias pytest := test
 alias tests := test
 alias t := test
 
@@ -37,7 +41,7 @@ compile:
     uv run --compile-bytecode python -c ""
 
 [group("Build")]
-[doc("Run release-it. (You will need a npx installation.)")]
+[doc("Run `release-it` based on git tags - since we use those to deploy. You will need `npx`.")]
 release:
     npx release-it
 
@@ -56,23 +60,23 @@ claude_md:
             f.write(line)
 
 [group("Test")]
-[doc("Run tests with pytest")]
+[doc("Run tests with `pytest`")]
 test:
     uv run --dev pytest
 
 [group("Lint")]
-[doc("Run ruff for formatting")]
+[doc("Run `ruff` for formatting")]
 format:
     - uvx ruff format
     uvx ruff check --select I --fix
 
 [group("Lint")]
-[doc("Run linting with ruff")]
+[doc("Run linting with `ruff`")]
 check:
     uvx ruff check
 
 [group("Lint")]
-[doc("Run ty type checking")]
+[doc("Run `ty` type checking")]
 ty:
     uvx ty check
 
