@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 from time import perf_counter
 from typing import TypeVar
 
+from ..human import duration
+
 T = TypeVar("T")
 IntoTimeDelta = timedelta | datetime | float | int
 
@@ -19,7 +21,7 @@ class TimeDelta:
             raise ValueError(f"Unsupported type for IntoTimeDelta: {type(value)}")
 
     def __str__(self) -> str:
-        return f"{self.value}s"
+        return str(duration(self.value))
 
     def into(self) -> float:
         return self.value
