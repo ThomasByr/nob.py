@@ -37,6 +37,11 @@ compile:
     uv run --compile-bytecode python -c ""
 
 [group("Build")]
+[doc("Run release-it. (You will need a npx installation.)")]
+release:
+    npx release-it
+
+[group("Build")]
 [doc("Create files to tell AI agents to STFU")]
 [private]
 [script]
