@@ -139,24 +139,21 @@ def test_hide_processing_speed(run_progress, mode, hide_processing_speed, expect
     [
         # With human formatting, unit is appended and numbers are simplified
         (2500, -1, True, "req", ["2.5kreq/2.5kreq", "req/s"], ["2500req/2500req", "2500/2500"]),
-
         # Without human_format, numbers strictly use completed/total formatting but keep the unit
         (2500, -1, False, "req", ["2500req/2500req", "req/s"], ["2.5kreq"]),
-
         # Human format enabled, no unit provided
         (1000, -1, True, "", ["1k/1k"], ["1000/1000"]),
-
         # Human format disabled, no unit provided
         (1000, -1, False, "", ["1000/1000", "/s"], ["1k"]),
-
         # Unknown total with human formatting
         (4500, None, True, "B", ["4.5kB"], ["4500B", "4.5kB/"]),
-
         # Unknown total without human formatting
         (4500, None, False, "B", ["4500B"], ["4.5kB", "4500B/"]),
     ],
 )
-def test_human_formatting_and_units(run_progress, mode, sequence_len, total, human_format, unit, expected_in, expected_not_in):
+def test_human_formatting_and_units(
+    run_progress, mode, sequence_len, total, human_format, unit, expected_in, expected_not_in
+):
     out = run_progress(mode, sequence_len=sequence_len, total=total, human_format=human_format, unit=unit)
     for expected in expected_in:
         assert expected in out
