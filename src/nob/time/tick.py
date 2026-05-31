@@ -34,6 +34,10 @@ class TickRateCounter:
         self.__mean_over = TimeDelta(mean_over).into()
         self.__tick_times: deque[float] = deque()
 
+    def __len__(self):
+        """Return the number of recorded ticks."""
+        return len(self.__tick_times)
+
     def tick(self):
         """Record a tick and update the tick times deque."""
         now = perf_counter()
