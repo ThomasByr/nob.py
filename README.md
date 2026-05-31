@@ -58,6 +58,13 @@ pip install git+https://github.com/ThomasByr/nob.py@v0.1.0
 </details>
 </details>
 
+<details>
+<summary>Available extras</summary>
+
+- `ipc` - for inter-process communication with [posix_ipc](https://pypi.org/project/posix-ipc/) (Linux and MacOS only).
+
+</details>
+
 ## Usage
 
 > [!Note]
@@ -149,4 +156,5 @@ just format check ty test
 ## TODOs
 
 - [x] workflow to publish to PyPI
-- [ ] update the progress module to use human count and duration
+- [x] update the progress module to use human count~~ and duration~~ (you shouldn't use progress bars for tasks shorter than a few seconds, basic h:m:s formatting is good enough for that)
+- [ ] add NamedSharedMemory and NamedMessageQueue to ipc module
