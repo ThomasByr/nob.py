@@ -41,7 +41,7 @@ FEATURES = Features()
 
 
 class Human(ABC):
-    def __init__(self, value: int | float):
+    def __init__(self, value: int | float, /):
         assert value >= 0.0
         self.__value = value
 
@@ -50,7 +50,7 @@ class Human(ABC):
         return self.__value
 
     @abstractmethod
-    def str(self, prec: int | None = None) -> str:
+    def str(self, prec: int | None = None, /) -> str:
         """Return a human-friendly representation of the value. It dynamically calculates the best scale to use.\\
         You don't need to call this method directly, just use `str()` or `print()` on the object.
 
@@ -73,7 +73,7 @@ class Human(ABC):
 
 
 class HumanWithUnit(Human):
-    def __init__(self, value: int | float, unit: str = ""):
+    def __init__(self, value: int | float, unit: str = "", /):
         super().__init__(value)
         self.__unit = unit
 
@@ -81,6 +81,6 @@ class HumanWithUnit(Human):
     def unit(self) -> str:
         return self.__unit
 
-    def with_unit(self, value: str):
+    def with_unit(self, value: str, /):
         """Return a new instance of the same class with the same value but a different unit."""
         return self.__class__(self.value, value)

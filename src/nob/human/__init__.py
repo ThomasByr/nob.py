@@ -7,7 +7,7 @@ __all__ = ["FEATURES", "count", "duration", "throughput"]
 # revival of https://github.com/rsalmei/about-time and pending PRs
 
 
-def count(value: int | float, unit: str = ""):
+def count(value: int | float, unit: str = "", /):
     """Get a renderable human-friendly representation of a count.
 
     Args:
@@ -25,7 +25,7 @@ def count(value: int | float, unit: str = ""):
     return HumanCount(value, unit)
 
 
-def duration(value: int | float):
+def duration(value: int | float, /):
     """Get a renderable human-friendly representation of a duration in seconds.
 
     Args:
@@ -42,7 +42,7 @@ def duration(value: int | float):
     return HumanDuration(value)
 
 
-def throughput(value: int | float, unit: str = "it"):
+def throughput(value: int | float, unit: str = "it", /):
     """Get a renderable human-friendly representation of a throughput in units per second.
 
     Args:

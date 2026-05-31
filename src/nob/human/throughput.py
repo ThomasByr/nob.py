@@ -14,7 +14,7 @@ SPEC = (
 )
 
 
-def __human_throughput(val: float, unit: str, prec: int | None, space: str, fn_count) -> str:
+def __human_throughput(val: float, unit: str, prec: int | None, space: str, fn_count, /) -> str:
     val *= 60.0 * 60.0 * 24.0
     for size, scale, dec in SPEC:
         r = round(val, dec)
@@ -35,8 +35,8 @@ def __human_throughput(val: float, unit: str, prec: int | None, space: str, fn_c
     return "{}/s".format(fn_count(val, unit, prec))
 
 
-def fn_human_throughput(show_space: bool, d1024: bool, iec: bool):
-    def run(val: float, unit: str, prec: int | None = None):
+def fn_human_throughput(show_space: bool, d1024: bool, iec: bool, /):
+    def run(val: float, unit: str, prec: int | None = None, /):
         return __human_throughput(val, unit, prec, space, fn_count)
 
     fn_count = fn_human_count(show_space, d1024, iec)

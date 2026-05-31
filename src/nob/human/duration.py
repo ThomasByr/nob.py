@@ -14,7 +14,7 @@ SPEC = (
 )
 
 
-def __human_duration(val: float, prec: int | None, space: str) -> str:
+def __human_duration(val: float, prec: int | None, space: str, /) -> str:
     val *= 1e9
     for size, div_next, scale, dec in SPEC:
         r = round(val, dec)
@@ -48,8 +48,8 @@ def __human_duration(val: float, prec: int | None, space: str) -> str:
     return "{:.0f}:{:02.0f}:{:02.0f}".format(m / 60.0 // 1.0, m % 60.0 // 1.0, val % 60.0 // 1.0)
 
 
-def fn_human_duration(show_space: bool):
-    def run(val, prec: int | None = None):
+def fn_human_duration(show_space: bool, /):
+    def run(val, prec: int | None = None, /):
         return __human_duration(val, prec, space)
 
     space = conv_space(show_space)

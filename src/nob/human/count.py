@@ -10,7 +10,7 @@ IEC_1024_SPEC = ("", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi", "Yi")
 DECIMALS = [1, 1, 1, 2, 2, 2, 2, 2, 2]
 
 
-def __human_count(val: float, unit: str, prec: int | None, space: str, divisor: int, spec: tuple) -> str:
+def __human_count(val: float, unit: str, prec: int | None, space: str, divisor: int, spec: tuple, /) -> str:
     for scale, dec in zip(spec, DECIMALS, strict=True):  # noqa: B007
         r = round(val, dec)
         if r >= divisor:
@@ -31,8 +31,8 @@ def __human_count(val: float, unit: str, prec: int | None, space: str, divisor: 
     return "{:.{}f}{}{}{}".format(r, prec, space, scale, unit)
 
 
-def fn_human_count(show_space: bool, d1024: bool, iec: bool):
-    def run(val: float, unit: str, prec: int | None = None):
+def fn_human_count(show_space: bool, d1024: bool, iec: bool, /):
+    def run(val: float, unit: str, prec: int | None = None, /):
         return __human_count(val, unit, prec, space, divisor, spec)
 
     space = conv_space(show_space)
