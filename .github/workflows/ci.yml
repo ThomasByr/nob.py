@@ -1,0 +1,38 @@
+name: "CI"
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install Python 3.11
+        run: uv python install 3.11
+
+      - name: Check Formatting
+        run: uvx ruff format --check
+
+      - name: Check Imports
+        run: uvx ruff check --select I
+
+      - name: Type Check (ty)
+        run: uvx ty check
+
+      - name: Run Tests
+        run: |
+          uv sync --all-extras --dev --frozen
+          uv run pytest
