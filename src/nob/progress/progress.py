@@ -66,24 +66,36 @@ class CustomTimeColumn(ProgressColumn):
 
 
 class BatchesProcessedColumn(ProgressColumn):
-    def __init__(self, style: str | Style):
+    def __init__(self, style: str | Style, hfmt: bool = True, unit: str = ""):
         self.style = style
+        self.__hfmt = hfmt
+        self.__unit = unit
         super().__init__()
 
     @override
     def render(self, task: "Task") -> RenderableType:
+        completed = int(task.completed)
         total = int(task.total) if task.total is not None and task.total != float("inf") else "--"
-        return Text(f"{int(task.completed)}/{total}", style=self.style)
+        if self.__hfmt:
+            if isinstance(total, int):
+                total = str(human.count(total, self.__unit))
+            return Text(f"{human.count(completed, self.__unit)}/{total}", style=self.style)
+        return Text(f"{completed}{self.__unit}/{total}{self.__unit}", style=self.style)
 
 
 class ProcessedColumn(ProgressColumn):
-    def __init__(self, style: str | Style):
+    def __init__(self, style: str | Style, hfmt: bool = True, unit: str = ""):
         self.style = style
+        self.__hfmt = hfmt
+        self.__unit = unit
         super().__init__()
 
     @override
     def render(self, task: "Task") -> RenderableType:
-        return Text(f"{int(task.completed)}", style=self.style)
+        completed = int(task.completed)
+        if self.__hfmt:
+            return Text(str(human.count(completed, self.__unit)), style=self.style)
+        return Text(f"{completed}{self.__unit}", style=self.style)
 
 
 class PercentageColumn(ProgressColumn):
@@ -98,13 +110,24 @@ class PercentageColumn(ProgressColumn):
 
 
 class ProcessingSpeedColumn(ProgressColumn):
-    def __init__(self, style: str | Style):
+    def __init__(self, style: str | Style, hfmt: bool = True, unit: str = ""):
         self.style = style
+        self.__hfmt = hfmt
+        self.__unit = unit
         super().__init__()
 
     @override
     def render(self, task: "Task") -> RenderableType:
-        task_speed = human.throughput(task.speed).str() if task.speed is not None else "0.00it/s"
+        if self.__hfmt:
+            task_speed = (
+                str(human.throughput(task.speed, self.__unit))
+                if task.speed is not None
+                else f"0.00{self.__unit}/s"
+            )
+        else:
+            task_speed = (
+                f"{task.speed:.2f}{self.__unit}/s" if task.speed is not None else f"0.00{self.__unit}/s"
+            )
         return Text(task_speed, style=self.style)
 
 
@@ -116,6 +139,8 @@ def create_columns(
     show_percentage: bool = False,
     hide_time: bool = False,
     hide_processing_speed: bool = False,
+    human_format: bool = True,
+    unit: str = "",
 ) -> list[ProgressColumn]:
     """Create a list of defaults columns for your `rich.progress.Progress` object.
 
@@ -124,6 +149,8 @@ def create_columns(
         show_percentage (bool, optional): To show percentage instead of `completed/total`. Can be useful for large items. Defaults to False.
         hide_time (bool, optional): Whether to hide the time column. Defaults to False.
         hide_processing_speed (bool, optional): Whether to hide the processing speed column. Defaults to False.
+        human_format (bool, optional): Whether to use human readable format for numbers. Defaults to True.
+        unit (str, optional): Unit to use for human readable format. Defaults to "".
 
     Returns:
         list[ProgressColumn]: _description_
@@ -133,8 +160,8 @@ def create_columns(
         if show_percentage:
             return [PercentageColumn(theme.metrics)]
         if known_total:
-            return [BatchesProcessedColumn(theme.batch_progress)]
-        return [ProcessedColumn(theme.batch_progress)]
+            return [BatchesProcessedColumn(theme.batch_progress, human_format, unit)]
+        return [ProcessedColumn(theme.batch_progress, human_format, unit)]
 
     def get_time_column():
         if hide_time:
@@ -144,7 +171,7 @@ def create_columns(
     def get_processing_speed_column():
         if hide_processing_speed:
             return []
-        return [ProcessingSpeedColumn(theme.processing_speed)]
+        return [ProcessingSpeedColumn(theme.processing_speed, human_format, unit)]
 
     return (
         [

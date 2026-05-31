@@ -17,6 +17,8 @@ def track(
     show_percentage: bool = False,
     hide_time: bool = False,
     hide_processing_speed: bool = False,
+    human_format: bool = True,
+    unit: str = "",
     completed: int = 0,
     auto_refresh: bool = True,
     transient: bool = False,
@@ -37,6 +39,8 @@ def track(
         show_percentage (bool, optional): To show percentage instead of `completed/total`. Can be useful for large items. Defaults to False.
         hide_time (bool, optional): Whether to hide the time column. Defaults to False.
         hide_processing_speed (bool, optional): Whether to hide the processing speed column. Defaults to False.
+        human_format (bool, optional): Whether to use human readable format for numbers (count and throughput). Defaults to True.
+        unit (str, optional): Unit to use for human readable format. Defaults to "".
         completed (int, optional): Number of steps completed so far. Defaults to 0.
         auto_refresh (bool, optional): Automatic refresh, disable to force a refresh after each iteration. Default is True.
         transient: (bool, optional): Clear the progress on exit. Defaults to False.
@@ -51,7 +55,14 @@ def track(
     """
 
     progress = Progress(
-        *create_columns(total is not None, show_percentage, hide_time, hide_processing_speed),
+        *create_columns(
+            total is not None,
+            show_percentage,
+            hide_time,
+            hide_processing_speed,
+            human_format,
+            unit,
+        ),
         auto_refresh=auto_refresh,
         console=console,
         transient=transient,
@@ -75,6 +86,8 @@ def progress(
     show_percentage: bool = False,
     hide_time: bool = False,
     hide_processing_speed: bool = False,
+    human_format: bool = True,
+    unit: str = "",
     auto_refresh: bool = True,
     transient: bool = False,
     get_time: Callable[[], float] | None = None,
@@ -89,6 +102,8 @@ def progress(
         show_percentage (bool, optional): To show percentage instead of `completed/total`. Can be useful for large items. Defaults to False.
         hide_time (bool, optional): Whether to hide the time column. Defaults to False.
         hide_processing_speed (bool, optional): Whether to hide the processing speed column. Defaults to False.
+        human_format (bool, optional): Whether to use human readable format for numbers (count and throughput). Defaults to True.
+        unit (str, optional): Unit to use for human readable format. Defaults to "".
         auto_refresh (bool, optional): Automatic refresh, disable to force a refresh after each iteration. Defaults to True.
         transient (bool, optional): Clear the progress on exit. Defaults to False.
         get_time (Callable[[], float] | None, optional): A callable that gets the current time, or None to use Console.get_time. Defaults to None.
@@ -100,7 +115,14 @@ def progress(
         Progress: A Progress object with custom colors and columns.
     """
     return Progress(
-        *create_columns(known_total, show_percentage, hide_time, hide_processing_speed),
+        *create_columns(
+            known_total,
+            show_percentage,
+            hide_time,
+            hide_processing_speed,
+            human_format,
+            unit,
+        ),
         auto_refresh=auto_refresh,
         console=console,
         transient=transient,
