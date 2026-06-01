@@ -20,7 +20,7 @@ if posix_ipc_defined:
 
     import pytest
 
-    from nob.ipc import NamedSemaphore  # Should also be defined
+    from nob.ipc import Flags, NamedSemaphore  # Should also be defined
 
     @contextmanager
     def dropping_root_privileges():
@@ -50,9 +50,7 @@ if posix_ipc_defined:
 
     # Helper function to create a semaphore in a separate process and block it
     def create_semaphore_task(semaphore_name, event):
-        sem = NamedSemaphore(
-            semaphore_name, initial_value=0, handle_existence=NamedSemaphore.Flags.RAISE_IF_EXISTS
-        )
+        sem = NamedSemaphore(semaphore_name, initial_value=0, handle_existence=Flags.RAISE_IF_EXISTS)
         # Signal the main process that semaphore is created
         event.set()
         sem.acquire()
@@ -76,7 +74,7 @@ if posix_ipc_defined:
             pass
 
     def test_init_basic(semaphore_name):
-        sem = NamedSemaphore(semaphore_name, handle_existence=NamedSemaphore.Flags.LINK_OR_CREATE)
+        sem = NamedSemaphore(semaphore_name, handle_existence=Flags.LINK_OR_CREATE)
         assert sem.name == f"/{semaphore_name}"
         assert sem.linked_existing_semaphore is False
 
@@ -100,58 +98,58 @@ if posix_ipc_defined:
 
     def test_raise_if_exists(semaphore_name):
         # First creation should succeed
-        sem1 = NamedSemaphore(semaphore_name, handle_existence=NamedSemaphore.Flags.RAISE_IF_EXISTS)
+        sem1 = NamedSemaphore(semaphore_name, handle_existence=Flags.RAISE_IF_EXISTS)
         assert sem1.linked_existing_semaphore is False
 
         # Second creation should fail
         with pytest.raises(FileExistsError):
-            NamedSemaphore(semaphore_name, handle_existence=NamedSemaphore.Flags.RAISE_IF_EXISTS)
+            NamedSemaphore(semaphore_name, handle_existence=Flags.RAISE_IF_EXISTS)
 
     def test_raise_if_not_exists_when_not_exists(semaphore_name):
         # Should fail when semaphore doesn't exist
         with pytest.raises(FileNotFoundError):
-            NamedSemaphore(semaphore_name, handle_existence=NamedSemaphore.Flags.RAISE_IF_NOT_EXISTS)
+            NamedSemaphore(semaphore_name, handle_existence=Flags.RAISE_IF_NOT_EXISTS)
 
     def test_raise_if_not_exists_when_exists(semaphore_name):
         # Create first semaphore
-        sem = NamedSemaphore(semaphore_name, handle_existence=NamedSemaphore.Flags.LINK_OR_CREATE)
+        sem = NamedSemaphore(semaphore_name, handle_existence=Flags.LINK_OR_CREATE)
         assert sem.linked_existing_semaphore is False
 
         # Successful to existing semaphore
-        sem_link = NamedSemaphore(semaphore_name, handle_existence=NamedSemaphore.Flags.RAISE_IF_NOT_EXISTS)
+        sem_link = NamedSemaphore(semaphore_name, handle_existence=Flags.RAISE_IF_NOT_EXISTS)
         assert sem_link.linked_existing_semaphore is True
 
     def test_link_or_create(semaphore_name):
         # First creation
-        sem1 = NamedSemaphore(semaphore_name, handle_existence=NamedSemaphore.Flags.LINK_OR_CREATE)
+        sem1 = NamedSemaphore(semaphore_name, handle_existence=Flags.LINK_OR_CREATE)
         assert sem1.linked_existing_semaphore is False
 
         # Second should link
-        sem2 = NamedSemaphore(semaphore_name, handle_existence=NamedSemaphore.Flags.LINK_OR_CREATE)
+        sem2 = NamedSemaphore(semaphore_name, handle_existence=Flags.LINK_OR_CREATE)
         assert sem2.linked_existing_semaphore is True
 
     def test_unlink_and_create(semaphore_name):
         # Create first semaphore
         NamedSemaphore(
             semaphore_name,
-            handle_existence=NamedSemaphore.Flags.LINK_OR_CREATE,
+            handle_existence=Flags.LINK_OR_CREATE,
             unlink_on_delete=False,  # Don't unlink the semaphore on garbage collection
         )
 
         # Delete and create new one
-        sem = NamedSemaphore(semaphore_name, handle_existence=NamedSemaphore.Flags.UNLINK_AND_CREATE)
+        sem = NamedSemaphore(semaphore_name, handle_existence=Flags.UNLINK_AND_CREATE)
         assert sem.linked_existing_semaphore is False
 
     def test_unlink_and_create_no_fail_if_not_exists(semaphore_name):
         # Delete and create new one
-        sem = NamedSemaphore(semaphore_name, handle_existence=NamedSemaphore.Flags.UNLINK_AND_CREATE)
+        sem = NamedSemaphore(semaphore_name, handle_existence=Flags.UNLINK_AND_CREATE)
         assert sem.linked_existing_semaphore is False
 
     def test_link_bad_permissions(semaphore_name, require_root):
         # Create semaphore with no permissions
         NamedSemaphore(
             semaphore_name,
-            handle_existence=NamedSemaphore.Flags.LINK_OR_CREATE,
+            handle_existence=Flags.LINK_OR_CREATE,
             unlink_on_delete=False,
         )
 
@@ -160,14 +158,12 @@ if posix_ipc_defined:
             with pytest.raises(PermissionError):
                 NamedSemaphore(
                     semaphore_name,
-                    handle_existence=NamedSemaphore.Flags.LINK_OR_CREATE,
+                    handle_existence=Flags.LINK_OR_CREATE,
                     unlink_on_delete=False,
                 )
 
     def test_value(semaphore_name):
-        sem = NamedSemaphore(
-            semaphore_name, handle_existence=NamedSemaphore.Flags.LINK_OR_CREATE, initial_value=2
-        )
+        sem = NamedSemaphore(semaphore_name, handle_existence=Flags.LINK_OR_CREATE, initial_value=2)
         assert sem.value == 2
         sem.acquire()
         assert sem.value == 1
@@ -175,13 +171,13 @@ if posix_ipc_defined:
         assert sem.value == 2
 
     def test_value_bad_os(semaphore_name):
-        sem = NamedSemaphore(semaphore_name, handle_existence=NamedSemaphore.Flags.LINK_OR_CREATE)
+        sem = NamedSemaphore(semaphore_name, handle_existence=Flags.LINK_OR_CREATE)
         with patch("posix_ipc.SEMAPHORE_VALUE_SUPPORTED", False):
             with pytest.raises(NotImplementedError):
                 _ = sem.value
 
     def test_acquire_bad_timeout(semaphore_name):
-        sem = NamedSemaphore(semaphore_name, handle_existence=NamedSemaphore.Flags.LINK_OR_CREATE)
+        sem = NamedSemaphore(semaphore_name, handle_existence=Flags.LINK_OR_CREATE)
 
         with pytest.raises(ValueError):
             sem.acquire(blocking=True, timeout=-1)
@@ -191,7 +187,7 @@ if posix_ipc_defined:
             sem.acquire(blocking=False, timeout=1)
 
     def test_acquire_bad_blocking(semaphore_name):
-        sem = NamedSemaphore(semaphore_name, handle_existence=NamedSemaphore.Flags.LINK_OR_CREATE)
+        sem = NamedSemaphore(semaphore_name, handle_existence=Flags.LINK_OR_CREATE)
 
         with pytest.raises(ValueError):
             sem.acquire(blocking=100)
@@ -199,13 +195,13 @@ if posix_ipc_defined:
             sem.acquire(blocking="True")
 
     def test_acquire_release(semaphore_name):
-        sem = NamedSemaphore(semaphore_name, handle_existence=NamedSemaphore.Flags.LINK_OR_CREATE)
+        sem = NamedSemaphore(semaphore_name, handle_existence=Flags.LINK_OR_CREATE)
 
         assert sem.acquire(blocking=True) is True
         sem.release()
 
     def test_acquire_timeout(semaphore_name):
-        sem = NamedSemaphore(semaphore_name, handle_existence=NamedSemaphore.Flags.LINK_OR_CREATE)
+        sem = NamedSemaphore(semaphore_name, handle_existence=Flags.LINK_OR_CREATE)
 
         # First acquire should succeed
         assert sem.acquire(blocking=True) is True
@@ -213,9 +209,18 @@ if posix_ipc_defined:
         # Second acquire should timeout
         assert sem.acquire(blocking=True, timeout=0.1) is False
 
+    def test_acquire_integer_timeout(semaphore_name):
+        from unittest.mock import MagicMock
+
+        sem = NamedSemaphore(semaphore_name, handle_existence=Flags.LINK_OR_CREATE)
+        mock_handle = MagicMock()
+        sem._NamedIPC__handle = mock_handle
+        sem.acquire(blocking=True, timeout=1)
+        mock_handle.acquire.assert_called_once_with(timeout=1)
+
     def test_acquire_timeout_bad_os(semaphore_name):
         with patch("posix_ipc.SEMAPHORE_TIMEOUT_SUPPORTED", False):
-            sem = NamedSemaphore(semaphore_name, handle_existence=NamedSemaphore.Flags.LINK_OR_CREATE)
+            sem = NamedSemaphore(semaphore_name, handle_existence=Flags.LINK_OR_CREATE)
 
             # First acquire should succeed
             assert sem.acquire(blocking=True) is True
@@ -225,7 +230,7 @@ if posix_ipc_defined:
                 sem.acquire(blocking=True, timeout=0.1)
 
     def test_acquire_non_blocking(semaphore_name):
-        sem = NamedSemaphore(semaphore_name, handle_existence=NamedSemaphore.Flags.LINK_OR_CREATE)
+        sem = NamedSemaphore(semaphore_name, handle_existence=Flags.LINK_OR_CREATE)
 
         # First non-blocking acquire should succeed
         assert sem.acquire(blocking=False) is True
@@ -234,7 +239,7 @@ if posix_ipc_defined:
         assert sem.acquire(blocking=False) is False
 
     def test_context_manager(semaphore_name):
-        sem = NamedSemaphore(semaphore_name, handle_existence=NamedSemaphore.Flags.LINK_OR_CREATE)
+        sem = NamedSemaphore(semaphore_name, handle_existence=Flags.LINK_OR_CREATE)
 
         with sem:
             # Semaphore should be acquired here
@@ -244,7 +249,7 @@ if posix_ipc_defined:
         assert sem.acquire(blocking=False) is True
 
     def test_release_bad_n(semaphore_name):
-        sem = NamedSemaphore(semaphore_name, handle_existence=NamedSemaphore.Flags.LINK_OR_CREATE)
+        sem = NamedSemaphore(semaphore_name, handle_existence=Flags.LINK_OR_CREATE)
 
         with pytest.raises(ValueError):
             sem.release(n=-1)
@@ -252,9 +257,7 @@ if posix_ipc_defined:
             sem.release(n="1")
 
     def test_multiple_release(semaphore_name):
-        sem = NamedSemaphore(
-            semaphore_name, initial_value=0, handle_existence=NamedSemaphore.Flags.LINK_OR_CREATE
-        )
+        sem = NamedSemaphore(semaphore_name, initial_value=0, handle_existence=Flags.LINK_OR_CREATE)
 
         sem.release(n=3)
 
@@ -265,15 +268,15 @@ if posix_ipc_defined:
         assert sem.acquire(blocking=False) is False
 
     def test_unlink(semaphore_name):
-        sem = NamedSemaphore(semaphore_name, handle_existence=NamedSemaphore.Flags.LINK_OR_CREATE)
+        sem = NamedSemaphore(semaphore_name, handle_existence=Flags.LINK_OR_CREATE)
         sem.unlink()
 
         # Should raise when trying to link to non-existent semaphore
         with pytest.raises(FileNotFoundError):
-            NamedSemaphore(semaphore_name, handle_existence=NamedSemaphore.Flags.RAISE_IF_NOT_EXISTS)
+            NamedSemaphore(semaphore_name, handle_existence=Flags.RAISE_IF_NOT_EXISTS)
 
     def test_unlink_bad_permissions(semaphore_name, require_root):
-        sem = NamedSemaphore(semaphore_name, handle_existence=NamedSemaphore.Flags.LINK_OR_CREATE)
+        sem = NamedSemaphore(semaphore_name, handle_existence=Flags.LINK_OR_CREATE)
 
         with dropping_root_privileges():
             # Should fail to unlink semaphore
@@ -283,7 +286,7 @@ if posix_ipc_defined:
             sem.__del__()
 
     def test_unlink_on_delete_auto_mode(semaphore_name):
-        sem = NamedSemaphore(semaphore_name, handle_existence=NamedSemaphore.Flags.LINK_OR_CREATE)
+        sem = NamedSemaphore(semaphore_name, handle_existence=Flags.LINK_OR_CREATE)
         assert sem.unlink_on_delete is True
         sem.__del__()
         with pytest.raises(posix_ipc.ExistentialError):
@@ -292,7 +295,7 @@ if posix_ipc_defined:
     def test_unlink_on_delete_explicit_mode_to_false(semaphore_name):
         sem = NamedSemaphore(
             semaphore_name,
-            handle_existence=NamedSemaphore.Flags.LINK_OR_CREATE,
+            handle_existence=Flags.LINK_OR_CREATE,
             unlink_on_delete=False,
         )
         assert sem.unlink_on_delete is False
