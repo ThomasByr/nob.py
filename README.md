@@ -1,7 +1,7 @@
 # Nob.py
 
 [![Python version](https://img.shields.io/badge/Python-3.11+-blue?logo=python&logoColor=white)](https://www.python.org/downloads/)
-[![PyPI version](https://img.shields.io/pypi/v/nob.py?logo=pypi&logoColor=white&label=PyPI)](https://pypi.python.org/pypi/nob.py/)
+[![PyPI version](https://img.shields.io/pypi/v/nob.py?logo=pypi&logoColor=white&label=PyPI&color=orange)](https://pypi.python.org/pypi/nob.py/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?logo=gitbook&logoColor=white)](https://opensource.org/licenses/MIT)
 [![Read the wiki](https://img.shields.io/badge/Doc-Wiki-green?logo=readthedocs&logoColor=white)](https://github.com/ThomasByr/nob.py/wiki)
 [![OS](https://img.shields.io/badge/OS-Cross--platform-lightgrey?logo=linux&logoColor=white)](https://github.com/ThomasByr/nob.py)
@@ -39,7 +39,7 @@ uv add git+https://github.com/ThomasByr/nob.py --branch main
 or lock a specific version:
 
 ```sh
-uv add git+https://github.com/ThomasByr/nob.py --tag v0.1.0
+uv add git+https://github.com/ThomasByr/nob.py --tag v0.1.3
 ```
 
 <details>
@@ -52,7 +52,7 @@ pip install git+https://github.com/ThomasByr/nob.py@main
 You may directly also use `@` with a tag, for example:
 
 ```sh
-pip install git+https://github.com/ThomasByr/nob.py@v0.1.0
+pip install git+https://github.com/ThomasByr/nob.py@v0.1.3
 ```
 
 </details>
@@ -156,5 +156,13 @@ just format check ty test
 ## TODOs
 
 - [x] workflow to publish to PyPI
-- [x] update the progress module to use human count~~ and duration~~ (you shouldn't use progress bars for tasks shorter than a few seconds, basic h:m:s formatting is good enough for that)
-- [ ] add NamedSharedMemory and NamedMessageQueue to ipc module
+
+    a github action publishes to pypi and creates a new release on new tags
+
+- [x] update the progress module to use human count ~~and duration~~
+
+    you shouldn't use progress bars for tasks shorter than a few seconds, basic hh:mm:ss formatting is good enough
+
+- [x] add NamedSharedMemory and NamedMessageQueue to ipc module
+
+    new abstract class NamedIPC for common features and code between NamedSemaphore, NamedSharedMemory and NamedMessageQueue
