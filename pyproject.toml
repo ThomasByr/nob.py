@@ -1,6 +1,7 @@
 [project]
 name = "nob.py"
 version = "1.0.0"
+license = "MIT"
 description = "Reasonable defaults for Click CLI applications."
 readme = "README.md"
 authors = [
@@ -15,6 +16,21 @@ dependencies = [
     "rich-click>=1.9.7",
     "typing-extensions>=4.1.0",
 ]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+
+[project.urls]
+homepage = "https://github.com/ThomasByr/nob.py/"
+documentation = "https://github.com/ThomasByr/nob.py/wiki/"
 
 [dependency-groups]
 dev = [
