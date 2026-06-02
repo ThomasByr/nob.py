@@ -71,14 +71,12 @@ pip install git+https://github.com/ThomasByr/nob.py@v0.1.3
 > Get more usage examples in the [Wiki](https://github.com/ThomasByr/nob.py/wiki/).
 
 ```py
-import logging
-
 from nob import cli
 
 
 @cli.cmd()
 @cli.opt("--name", required=True, help="Greet someone.")
-def hello(lg: logging.Logger, name: str):
+def hello(lg: cli.Logger, name: str):
     lg.info("Hello %s", name)
 
 
