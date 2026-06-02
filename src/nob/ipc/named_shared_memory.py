@@ -57,6 +57,10 @@ class NamedSharedMemory(NamedIPC):
             >>> memory.seek(0)
             >>> assert memory.read(20) == b"Hello from POSIX IPC"
             >>> memory.close()
+            # NamedSharedMemory also supports context management for automatic closing:
+            >>> with NamedSharedMemory("/test_shm", size=1024, handle_existence=Flags.RAISE_IF_NOT_EXISTS) as shm:
+            ...     memory = mmap.mmap(shm.fd, shm.size)
+            ...     memory.write(b"Hello again!")
         """
         if not (isinstance(size, int) and size >= 0):
             raise ValueError("`size` must be a non-negative integer")

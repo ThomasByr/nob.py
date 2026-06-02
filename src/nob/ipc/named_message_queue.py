@@ -63,6 +63,9 @@ class NamedMessageQueue(NamedIPC):
             >>> message, priority = mq.receive()
             >>> print(message.decode(), priority)
             Hello, World! 0
+            # NamedMessageQueue also supports context management for automatic closing:
+            >>> with NamedMessageQueue("/test_queue", handle_existence=Flags.RAISE_IF_NOT_EXISTS) as mq:
+            ...     mq.send("Hello again!")
         """
 
         self.__max_messages = (
