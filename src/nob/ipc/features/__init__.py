@@ -113,7 +113,7 @@ class NamedIPC(ABC):
 
     def close(self) -> None:
         """Close the local IPC handle."""
-        if getattr(self, "_NamedIPC__handle", None) is not None:
+        if self.handle is not None:
             try:
                 self._close_handle()
             except Exception:
@@ -123,18 +123,7 @@ class NamedIPC(ABC):
     def __del__(self) -> None:
         """Destructor for the class. Unlinks if it was created by this handle."""
         self.close()
-
-        if getattr(self, "_NamedIPC__name", None) is None:
-            return
-
-        # It's only safe to clean up if we had properly initialized handle existence
-        if (
-            getattr(self, "_NamedIPC__linked_existing_object", None) is None
-            and getattr(self, "_NamedIPC__unlink_on_delete", None) is None
-        ):
-            return
-
-        if not self.unlink_on_delete:
+        if (not self.name) or (not self.unlink_on_delete):
             return
 
         try:
