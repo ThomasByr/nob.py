@@ -1,4 +1,5 @@
 import logging
+import mmap
 from typing import Any
 
 from typing_extensions import override
@@ -52,7 +53,7 @@ class NamedSharedMemory(NamedIPC):
         Example:
             >>> import mmap
             >>> shm = NamedSharedMemory("/test_shm", size=1024, handle_existence=Flags.UNLINK_AND_CREATE)
-            >>> memory = mmap.mmap(shm.fd, shm.size)
+            >>> memory = mmap.mmap(shm.fd, shm.size)  # or shm.mmap() as a convenience method
             >>> memory.write(b"Hello from POSIX IPC")
             >>> memory.seek(0)
             >>> assert memory.read(20) == b"Hello from POSIX IPC"
@@ -61,6 +62,9 @@ class NamedSharedMemory(NamedIPC):
             >>> with NamedSharedMemory("/test_shm", size=1024, handle_existence=Flags.RAISE_IF_NOT_EXISTS) as shm:
             ...     memory = mmap.mmap(shm.fd, shm.size)
             ...     memory.write(b"Hello again!")
+            # Or
+            >>> with NamedSharedMemory("/test_shm", size=1024, handle_existence=Flags.RAISE_IF_NOT_EXISTS).mmap() as memory:
+            ...     memory.write(b"Hello again with convenience method!")
         """
         if not (isinstance(size, int) and size >= 0):
             raise ValueError("`size` must be a non-negative integer")
@@ -105,3 +109,12 @@ class NamedSharedMemory(NamedIPC):
 
     def __exit__(self, *args, **kwargs) -> None:
         self.close()
+
+    def mmap(self):
+        """Get a memory-mapped object for the shared memory segment.\\
+        Convenience method for `mmap.mmap(self.fd, self.size)` with proper access flags based on the `read_only` parameter."""
+        return mmap.mmap(
+            self.fd,
+            self.size,
+            access=mmap.ACCESS_READ if self.__read_only else mmap.ACCESS_WRITE,
+        )
