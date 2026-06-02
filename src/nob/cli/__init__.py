@@ -4,11 +4,12 @@ from logging import Logger  # noqa: F401
 from typing import ParamSpec, TypeVar
 
 import rich_click as click
+from rich_click import Context  # noqa: F401
 
 from . import types  # noqa: F401
 from .config import AliasedGroup, CLIMutex, Config, pass_config
 
-all = ["opt", "cmd", "grp", "pass_config", "pass_context", "types", "Logger"]
+all = ["opt", "cmd", "grp", "pass_config", "pass_context", "types", "Logger", "Context"]
 
 P = ParamSpec("P")
 Q = ParamSpec("Q")
