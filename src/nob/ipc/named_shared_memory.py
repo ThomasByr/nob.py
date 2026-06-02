@@ -95,3 +95,9 @@ class NamedSharedMemory(NamedIPC):
     def fd(self) -> int:
         """Get the file descriptor of the shared memory segment."""
         return self.handle.fd
+
+    def __enter__(self) -> "NamedSharedMemory":
+        return self
+
+    def __exit__(self, *args, **kwargs) -> None:
+        self.close()

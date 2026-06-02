@@ -1,6 +1,6 @@
 import logging
 from collections.abc import Callable
-from typing import Any
+from typing import Any, overload
 
 from typing_extensions import override
 
@@ -172,6 +172,11 @@ class NamedMessageQueue(NamedIPC):
         except posix_ipc.BusyError:
             return False
 
+    @overload
+    def receive(self) -> tuple[bytes, int]: ...
+    @overload
+    def receive(self, timeout: float) -> tuple[bytes, int] | None: ...
+
     def receive(self, timeout: float | None = None) -> tuple[bytes, int] | None:
         """Receive a message from the queue, optionally with a timeout.
 
@@ -215,3 +220,9 @@ class NamedMessageQueue(NamedIPC):
             return True
         except posix_ipc.BusyError:
             return False
+
+    def __enter__(self) -> "NamedMessageQueue":
+        return self
+
+    def __exit__(self, *args, **kwargs) -> None:
+        self.close()
