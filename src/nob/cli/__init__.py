@@ -1,5 +1,6 @@
 import logging
 from collections.abc import Callable
+from logging import Logger  # noqa: F401
 from typing import ParamSpec, TypeVar
 
 import rich_click as click
@@ -7,7 +8,7 @@ import rich_click as click
 from . import types  # noqa: F401
 from .config import AliasedGroup, CLIMutex, Config, pass_config
 
-all = ["opt", "cmd", "grp", "pass_config", "pass_context", "types"]
+all = ["opt", "cmd", "grp", "pass_config", "pass_context", "types", "Logger"]
 
 P = ParamSpec("P")
 Q = ParamSpec("Q")
