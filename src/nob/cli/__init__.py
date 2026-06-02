@@ -9,7 +9,7 @@ from rich_click import Context  # noqa: F401
 from . import types  # noqa: F401
 from .config import AliasedGroup, CLIMutex, Config, pass_config
 
-all = ["opt", "cmd", "grp", "pass_config", "pass_context", "types", "Logger", "Context"]
+all = ["opt", "cmd", "grp", "pass_config", "pass_context", "types", "Logger", "Context", "Config"]
 
 P = ParamSpec("P")
 Q = ParamSpec("Q")
@@ -179,9 +179,9 @@ def grp(
 def cmd(grp: click.RichGroup | None = None) -> click.RichCommand:
     """Decorator to create a command. Can be attached to a group.\\
     Adds the following parameters to the command if they are present in the function signature or if the function accepts `**kwargs`:
-    - `cfg`: The Config object `nob.cli.config.Config`
-    - `ctx`: The Click context object `rich_click.Context`
-    - `lg`: A logger with the name of the command `logging.Logger`
+    - `cfg`: The Config object `nob.cli.Config`
+    - `ctx`: The Click context object `nob.cli.Context` (alias for `rich_click.Context`)
+    - `lg`: A logger with the name of the command `nob.cli.Logger` (alias for `logging.Logger`)
     """
     entity = grp or click
 
