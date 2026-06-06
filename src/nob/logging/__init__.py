@@ -32,6 +32,10 @@ def init_handler(
         max_bytes (int, optional): The maximum size of the log file before it is rotated. Defaults to 10 MB per file.
         backup_count (int, optional): The number of backup log files to keep. Defaults to 5.
     """
+    if isinstance(max_bytes, int) and max_bytes < 0:
+        raise ValueError("max_bytes must be a positive integer")
+    if isinstance(backup_count, int) and backup_count < 0:
+        raise ValueError("backup_count must be a positive integer")
     handlers: list = [RichHandler()]  # modifies the record first for RotatingFileHandler
     max_bytes = max_bytes if max_bytes is not None else 10 * 1024 * 1024
     backup_count = backup_count if backup_count is not None else 5

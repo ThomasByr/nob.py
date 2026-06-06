@@ -18,6 +18,8 @@ class Config(BaseModel):
     aliases: dict[str, str] = Field(default_factory=dict)
     log_level: int = logging.INFO
     log_file: str | None = None
+    log_file_max_bytes: int | None = None
+    log_file_backup_count: int | None = None
 
     def add_alias(self, alias: str, cmd: str):
         self.aliases[alias] = cmd
