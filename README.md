@@ -97,7 +97,7 @@ Replace `uv run` with `python` once your environment is activated - if you don't
 > [!Important]
 > Sign your commits.
 
-Clone the repository if you have direct right access or clone your fork:
+Clone the repository if you have direct write access or clone your fork:
 
 ```sh
 git clone git@github.com:ThomasByr/nob.py nob
