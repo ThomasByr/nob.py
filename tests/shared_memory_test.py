@@ -247,3 +247,13 @@ if posix_ipc_defined:
 
         # Shared memory should not be unlinked as SIGTERM is not handled
         posix_ipc.unlink_shared_memory(f"/{shm_name}")
+
+    def test_invalid_read(shm_name):
+        # Case 1: create as read_only and try to write
+        shm = NamedSharedMemory(shm_name, handle_existence=Flags.UNLINK_AND_CREATE, read_only=True)
+        with pytest.raises(ValueError):
+            memory = shm.mmap()
+            memory.write(b"\0")
+        # Case 2: create with size > 0
+        with pytest.raises(ValueError):
+            NamedSharedMemory(shm_name, size=1024, handle_existence=Flags.UNLINK_AND_CREATE, read_only=True)
