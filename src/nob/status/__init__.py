@@ -89,15 +89,14 @@ def update_status(
         speed_factor: The new factor by which to adjust the speed of the spinner. If None, the speed factor will not be updated.
     """
     assert isinstance(status, Status) and status is not None
-    if text is not None:
-        status.update(status=text)
     if spinner is not None:
         __check_spinner(spinner)
-        status.update(spinner=spinner)
-    if style is not None:
-        status.update(spinner_style=style)
-    if speed_factor is not None:
-        status.update(speed=speed_factor)
+    status.update(
+        status=text,
+        spinner=spinner,
+        spinner_style=style,
+        speed=speed_factor,
+    )
 
 
 def start():
