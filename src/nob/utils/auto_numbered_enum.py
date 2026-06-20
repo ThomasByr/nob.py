@@ -8,24 +8,21 @@ class AutoNumberedEnum(Enum):
     An enum that automatically assigns values to its members.\\
     Just inherit from this class instead of `Enum` and you're good to go.
 
-    ## Note
-    C-style numbering starts at `1` (0 is never picked),\\
-    so that implicit boolean representation of a valid member always evaluate to `True`
+    Examples:
+        ```
+        class MyEnum(AutoNumberedEnum):
+            FOO = ()
+            BAR = ()
+            BAZ = ()
 
-    ## Example
-    ```py
-    >>> class MyEnum(AutoNumberedEnum):
-    ...   FOO = ()
-    ...   BAR = ()
-    ...   BAZ = ()
-    ...
-    >>> MyEnum.FOO
-    <MyEnum.FOO: 1>
-    >>> MyEnum.BAR
-    <MyEnum.BAR: 2>
-    >>> MyEnum.BAZ
-    <MyEnum.BAZ: 3>
-    ```
+        >>> MyEnum.FOO  # <MyEnum.FOO: 1>
+        >>> MyEnum.BAR  # <MyEnum.BAR: 2>
+        >>> MyEnum.BAZ  # <MyEnum.BAZ: 3>
+        ```
+
+    Notes:
+        C-style numbering starts at `1` (`0` is never picked),
+        so that implicit boolean representation of a valid member always evaluate to `True`
     """
 
     def __new__(cls, *args) -> "AutoNumberedEnum":
