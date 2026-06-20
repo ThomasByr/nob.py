@@ -30,7 +30,7 @@ def run_progress(capsys: CaptureFixture[str]):
                 "unit": unit,
             }
             if total != -1:
-                kwargs["total"] = total  # ty:ignore[invalid-assignment]
+                kwargs["total"] = total
 
             for _ in progress.track(range(sequence_len), **kwargs):  # ty:ignore[invalid-argument-type]
                 pass
