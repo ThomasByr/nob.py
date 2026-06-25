@@ -23,6 +23,9 @@ jobs:
       - name: Install Python 3.11
         run: uv python install 3.11
 
+      - name: Install Dependencies
+        run: uv sync --all-extras --dev --frozen
+
       - name: Check Formatting
         run: uvx ruff format --check
 
@@ -30,13 +33,7 @@ jobs:
         run: uvx ruff check --select I
 
       - name: Type Check (ty)
-        run: |
-          pwd
-          cat pyproject.toml
-          uvx --refresh ty@latest version
-          uvx --refresh ty@latest check
+        run: uvx ty check
 
       - name: Run Tests
-        run: |
-          uv sync --all-extras --dev --frozen
-          uv run pytest
+        run: uv run pytest
