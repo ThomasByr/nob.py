@@ -30,7 +30,7 @@ jobs:
         run: uvx ruff check --select I
 
       - name: Type Check (ty)
-        run: uvx ty check
+        run: uvx --refresh ty@latest check
 
       - name: Run Tests
         run: |
