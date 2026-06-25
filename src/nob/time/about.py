@@ -44,7 +44,7 @@ class Handle(object):
         return HumanDuration(self.duration)
 
 
-class HandleResult(Generic[T], Handle):
+class HandleResult(Handle, Generic[T]):
     def __init__(self, timings: list[float], result: T):
         super(HandleResult, self).__init__(timings)
         self.__result = result
@@ -60,7 +60,7 @@ class HandleResult(Generic[T], Handle):
         return self.__result
 
 
-class HandleStats(Generic[T], Handle):
+class HandleStats(Handle, Generic[T]):
     def __init__(self, timings: list[float], it_closure: Callable[[], Generator[T, None, None]]):
         super(HandleStats, self).__init__(timings)
         self.__it = it_closure  # Has a .count attribute

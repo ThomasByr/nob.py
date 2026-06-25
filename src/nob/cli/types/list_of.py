@@ -7,7 +7,7 @@ __all__ = ["ListOf"]
 T = TypeVar("T")
 
 
-class ListOf(Generic[T], click.ParamType):
+class ListOf(click.ParamType, Generic[T]):
     """A click parameter type that parses a comma-separated string into a list
     of a given inner type (e.g. ListOf(int), ListOf(float))."""
 
