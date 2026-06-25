@@ -31,9 +31,9 @@ default:
     @just --list --unsorted
 
 [group("Build")]
-[doc("Sync with --all-extras")]
+[doc("Sync with --all-extras --dev -U")]
 sync:
-    uv sync --all-extras
+    uv sync --all-extras --dev -U
 
 [group("Build")]
 [doc("Compile Python code to bytecode")]
