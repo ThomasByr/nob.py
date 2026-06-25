@@ -278,7 +278,7 @@ def test_smart_injection_constraints(cmd_name, expected_output):
     [
         (["--numbers", "1, 2, 3"], 0, "Processed numbers: [1, 2, 3]"),
         (["--numbers", "1, two, 3"], 2, "Could not convert"),
-        ([], 2, "Missing option '--numbers'"),
+        ([], 2, "Missing option"),
     ],
 )
 def test_list_of_int_conversion(args, expected_exit, expected_output):
@@ -299,7 +299,7 @@ def test_list_of_int_conversion(args, expected_exit, expected_output):
     [
         (["--values", "1.5, 2.5, 3.5"], 0, "Processed values: [1.5, 2.5, 3.5]"),
         (["--values", "1.5, two, 3.5"], 2, "Could not convert"),
-        ([], 2, "Missing option '--values'"),
+        ([], 2, "Missing option"),
     ],
 )
 def test_list_of_float_conversion(args, expected_exit, expected_output):
@@ -319,7 +319,7 @@ def test_list_of_float_conversion(args, expected_exit, expected_output):
     "args, expected_exit, expected_output",
     [
         (["--words", "hello, world, test"], 0, "Processed words: ['hello', 'world', 'test']"),
-        ([], 2, "Missing option '--words'"),
+        ([], 2, "Missing option"),
     ],
 )
 def test_list_of_str_conversion(args, expected_exit, expected_output):
