@@ -30,7 +30,11 @@ jobs:
         run: uvx ruff check --select I
 
       - name: Type Check (ty)
-        run: uvx --refresh ty@latest check
+        run: |
+          pwd
+          cat pyproject.toml
+          uvx --refresh ty@latest version
+          uvx --refresh ty@latest check
 
       - name: Run Tests
         run: |
