@@ -271,3 +271,65 @@ def test_smart_injection_constraints(cmd_name, expected_output):
     res = runner.invoke(main, [cmd_name])
     assert res.exit_code == 0
     assert expected_output in res.output
+
+
+@pytest.mark.parametrize(
+    "args, expected_exit, expected_output",
+    [
+        (["--numbers", "1, 2, 3"], 0, "Processed numbers: [1, 2, 3]"),
+        (["--numbers", "1, two, 3"], 2, "Could not convert"),
+        ([], 2, "Missing option '--numbers'"),
+    ],
+)
+def test_list_of_int_conversion(args, expected_exit, expected_output):
+    runner = CliRunner()
+
+    @cli.cmd()
+    @cli.opt("--numbers", type=cli.types.ListOf(int), required=True)
+    def process_numbers(numbers):
+        print(f"Processed numbers: {numbers}")
+
+    res = runner.invoke(process_numbers, args)
+    assert res.exit_code == expected_exit
+    assert expected_output in res.output
+
+
+@pytest.mark.parametrize(
+    "args, expected_exit, expected_output",
+    [
+        (["--values", "1.5, 2.5, 3.5"], 0, "Processed values: [1.5, 2.5, 3.5]"),
+        (["--values", "1.5, two, 3.5"], 2, "Could not convert"),
+        ([], 2, "Missing option '--values'"),
+    ],
+)
+def test_list_of_float_conversion(args, expected_exit, expected_output):
+    runner = CliRunner()
+
+    @cli.cmd()
+    @cli.opt("--values", type=cli.types.ListOf(float), required=True)
+    def process_values(values):
+        print(f"Processed values: {values}")
+
+    res = runner.invoke(process_values, args)
+    assert res.exit_code == expected_exit
+    assert expected_output in res.output
+
+
+@pytest.mark.parametrize(
+    "args, expected_exit, expected_output",
+    [
+        (["--words", "hello, world, test"], 0, "Processed words: ['hello', 'world', 'test']"),
+        ([], 2, "Missing option '--words'"),
+    ],
+)
+def test_list_of_str_conversion(args, expected_exit, expected_output):
+    runner = CliRunner()
+
+    @cli.cmd()
+    @cli.opt("--words", type=cli.types.ListOf(str), required=True)
+    def process_words(words):
+        print(f"Processed words: {words}")
+
+    res = runner.invoke(process_words, args)
+    assert res.exit_code == expected_exit
+    assert expected_output in res.output
