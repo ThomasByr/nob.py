@@ -15,7 +15,6 @@
 1. [Installation](#installation)
 2. [Usage](#usage)
 3. [Contributing](#contributing)
-4. [TODOs](#todos)
 
 ## Installation
 
@@ -109,8 +108,14 @@ Then:
 
     <details><summary>Linux Bash</summary>
 
-    ```bash
+    ```sh
     curl -LsSf https://astral.sh/uv/install.sh | sh
+    ```
+
+    or
+
+    ```sh
+    wget -qO- --content-disposition https://astral.sh/uv/install.sh | sh
     ```
 
     </details>
@@ -126,14 +131,25 @@ Then:
 2. Install [just](https://just.systems):
 
     ```sh
+    uv tool install rust-just
+    ```
+
+    <details><summary>Or if you use cargo</summary>
+
+    You can also install just-lsp.
+
+    ```sh
     cargo install --locked just just-lsp
     ```
+
+    </details>
 
     List all available recipes by typing `just`.
 
 3. Sync the codebase dependencies
 
-    Without explicit `--all-extras` syncing, some recipes will not evaluate on optional dependencies and functionalities.
+    Without explicit `--all-extras` syncing, some recipes will not evaluate on optional dependencies and functionalities.<br>
+    The `sync` recipe will also update the dependencies if possible.
 
     ```sh
     just sync
@@ -150,17 +166,3 @@ just format check ty test
 > [!TIP]
 > Install pre-commit hooks: `just pc-install`.<br>
 > To keep hooks somewhat fast enough, they will <u>only</u> check (not forcibly fix) for typing and formatting.
-
-## TODOs
-
-- [x] workflow to publish to PyPI
-
-    a github action publishes to pypi and creates a new release on new tags
-
-- [x] update the progress module to use human count ~~and duration~~
-
-    you shouldn't use progress bars for tasks shorter than a few seconds, basic hh:mm:ss formatting is good enough
-
-- [x] add NamedSharedMemory and NamedMessageQueue to ipc module
-
-    new abstract class NamedIPC for common features and code between NamedSemaphore, NamedSharedMemory and NamedMessageQueue
