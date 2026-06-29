@@ -1,22 +1,24 @@
-from typing import Generic, TypeVar
-
 import rich_click as click
 
 __all__ = ["ListOf"]
 
-T = TypeVar("T")
 
-
-class ListOf(click.ParamType, Generic[T]):
+class ListOf(click.ParamType):
     """A click parameter type that parses a comma-separated string into a list
     of a given inner type (e.g. ListOf(int), ListOf(float))."""
 
     name = "list"
 
-    def __init__(self, inner_type: type):
+    def __init__(self, inner_type: type | click.ParamType | None = None):
+        """Generate a new ListOf parameter type.
+
+        Args:
+            inner_type (type | click.ParamType | None, optional): The type of each element in the list.
+                If None, returns the raw string parts. Defaults to None.
+        """
         self.inner_type = inner_type
 
-    def convert(self, value, param, ctx) -> list[T] | None:
+    def convert(self, value: str | list | None, param, ctx):
         if value is None:
             return None
 
@@ -26,6 +28,9 @@ class ListOf(click.ParamType, Generic[T]):
 
         parts = [p.strip() for p in value.split(",")]
         try:
+            if self.inner_type is None:
+                return parts
             return [self.inner_type(p) for p in parts]
         except (ValueError, TypeError) as e:
-            self.fail(f"Could not convert {value!r} to list of {self.inner_type.__name__}: {e}", param, ctx)
+            name = getattr(self.inner_type, "__name__", str(self.inner_type))
+            self.fail(f"Could not convert {value!r} to list of {name}: {e}", param, ctx)
