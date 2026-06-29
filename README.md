@@ -96,13 +96,7 @@ Replace `uv run` with `python` once your environment is activated - if you don't
 > [!Important]
 > Sign your commits.
 
-Clone the repository if you have direct write access or clone your fork:
-
-```sh
-git clone git@github.com:ThomasByr/nob.py nob
-```
-
-Then:
+### Pre-requisites
 
 1. Install [uv](https://docs.astral.sh/uv/) if you haven't already (or run `uv self update`):
 
@@ -130,13 +124,17 @@ Then:
 
 2. Install [just](https://just.systems):
 
+    <details><summary>With uv</summary>
+
     ```sh
     uv tool install rust-just
     ```
 
-    <details><summary>Or if you use cargo</summary>
+    </details>
 
-    You can also install just-lsp.
+    <details><summary>Or if you have cargo</summary>
+
+    This way you can also install just-lsp.
 
     ```sh
     cargo install --locked just just-lsp
@@ -144,24 +142,36 @@ Then:
 
     </details>
 
-    List all available recipes by typing `just`.
+### Useful just recipes
 
-3. Sync the codebase dependencies
+<details><summary>List all available recipes</summary>
 
-    Without explicit `--all-extras` syncing, some recipes will not evaluate on optional dependencies and functionalities.<br>
-    The `sync` recipe will also update the dependencies if possible.
+```sh
+just
+```
 
-    ```sh
-    just sync
-    ```
+</details>
 
-**Run the following recipes before committing.**
+<details><summary>Sync the codebase dependencies</summary>
+
+Without explicit `--all-extras` syncing, some recipes will not evaluate on optional dependencies and functionalities.<br>
+The `sync` recipe will also update the dependencies if possible.
+
+```sh
+just sync
+```
+
+</details>
+
+<details><summary>Before committing</summary>
 
 We (I) work with [ruff](https://docs.astral.sh/ruff/), [ty](https://docs.astral.sh/ty/) and [pytest](https://docs.pytest.org/en/stable/).
 
 ```sh
 just format check ty test
 ```
+
+</details>
 
 > [!TIP]
 > Install pre-commit hooks: `just pc-install`.<br>
