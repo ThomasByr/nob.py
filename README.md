@@ -173,6 +173,26 @@ just format check ty test
 
 </details>
 
+<details><summary>Release a new version</summary>
+
+This recipe uses [release-it](https://github.com/release-it/release-it). You will need a working `npx` installation.
+
+<details><summary>Install fnm with cargo</summary>
+
+```sh
+cargo install fnm --locked
+fnm install --lts
+fnm use --lts
+```
+
+</details>
+
+```sh
+just release
+```
+
+</details>
+
 > [!TIP]
 > Install pre-commit hooks: `just pc-install`.<br>
 > To keep hooks somewhat fast enough, they will <u>only</u> check (not forcibly fix) for typing and formatting.
