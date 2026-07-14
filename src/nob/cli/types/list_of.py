@@ -35,7 +35,7 @@ class ListOf(click.ParamType, Generic[T]):
         """Generate a new ListOf parameter type.
 
         Args:
-            inner_type (type | click.ParamType | None, optional): The type of each element in the list.
+            inner_type (type[T] | click.ParamType[T] | None, optional): The type of each element in the list.
                 If None, returns the raw string parts. Defaults to None.
             min_length (int, optional): Minimum number of elements in the list. Defaults to 1.
             max_length (int | None, optional): Maximum number of elements in the list. Defaults to None.
