@@ -333,3 +333,87 @@ def test_list_of_str_conversion(args, expected_exit, expected_output):
     res = runner.invoke(process_words, args)
     assert res.exit_code == expected_exit
     assert expected_output in res.output
+
+
+@pytest.mark.parametrize(
+    "args, expected_exit, expected_output",
+    [
+        (["--numbers", "1, 2, 3"], 0, "Processed positive numbers: [1, 2, 3]"),
+        (["--numbers", "-1, 2, 3"], 2, "failed verification"),
+        ([], 2, "Missing option"),
+    ],
+)
+def test_list_of_with_custom_verification(args, expected_exit, expected_output):
+    runner = CliRunner()
+
+    @cli.cmd()
+    @cli.opt("--numbers", type=cli.types.ListOf(int, verify=lambda x: x > 0), required=True)
+    def process_positive_numbers(numbers):
+        print(f"Processed positive numbers: {numbers}")
+
+    res = runner.invoke(process_positive_numbers, args)
+    assert res.exit_code == expected_exit
+    assert expected_output in res.output
+
+
+@pytest.mark.parametrize(
+    "args, expected_exit, expected_output",
+    [
+        (["--numbers", "1, 2, 3"], 0, "Processed numbers: [1, 2, 3]"),
+        (["--numbers", "1, 2, 3, 4, 5, 6"], 2, "Expected at most 5 elements"),
+        (["--numbers", "1"], 2, "Expected at least 2 elements"),
+        ([], 2, "Missing option"),
+    ],
+)
+def test_list_of_with_length_constraints(args, expected_exit, expected_output):
+    runner = CliRunner()
+
+    @cli.cmd()
+    @cli.opt("--numbers", type=cli.types.ListOf(int, min_length=2, max_length=5), required=True)
+    def process_numbers(numbers):
+        print(f"Processed numbers: {numbers}")
+
+    res = runner.invoke(process_numbers, args)
+    assert res.exit_code == expected_exit
+    assert expected_output in res.output
+
+
+@pytest.mark.parametrize(
+    "args, expected_exit, expected_output",
+    [
+        (["--numbers", "1, 2, 3"], 0, "Processed numbers: [1, 2, 3]"),
+        (["--numbers", "1, 2"], 2, "Expected exactly 3 elements"),
+        (["--numbers", "1, 2, 3, 4"], 2, "Expected exactly 3 elements"),
+        ([], 2, "Missing option"),
+    ],
+)
+def test_list_of_with_exact_length_constraint(args, expected_exit, expected_output):
+    runner = CliRunner()
+
+    @cli.cmd()
+    @cli.opt("--numbers", type=cli.types.ListOf(int, length=3), required=True)
+    def process_numbers(numbers):
+        print(f"Processed numbers: {numbers}")
+
+    res = runner.invoke(process_numbers, args)
+    assert res.exit_code == expected_exit
+    assert expected_output in res.output
+
+
+@pytest.mark.parametrize(
+    "min_length, max_length, length, expected_exception",
+    [
+        (1, None, 3, 0),
+        (1, 10, None, 0),
+        (1, 5, 3, 1),
+        (2, None, 4, 1),
+        (2, 5, 2, 1),
+    ],
+)
+def test_list_of_with_conflicting_length_constraints(min_length, max_length, length, expected_exception):
+    if expected_exception:
+        with pytest.raises(ValueError, match="Cannot specify both length and min/max length"):
+            cli.types.ListOf(int, min_length=min_length, max_length=max_length, length=length)
+    else:
+        # Should not raise an exception
+        cli.types.ListOf(int, min_length=min_length, max_length=max_length, length=length)
