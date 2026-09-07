@@ -417,3 +417,149 @@ def test_list_of_with_conflicting_length_constraints(min_length, max_length, len
     else:
         # Should not raise an exception
         cli.types.ListOf(int, min_length=min_length, max_length=max_length, length=length)
+
+
+@pytest.mark.parametrize(
+    "args, expected_args",
+    [
+        ([], []),
+        (["--foo", "bar"], ["--foo", "bar"]),
+        (["extra"], ["extra"]),
+        (["--foo", "bar", "extra", "-x", "--baz", "1"], ["--foo", "bar", "extra", "-x", "--baz", "1"]),
+    ],
+)
+def test_cmd_allow_extra_args(args, expected_args):
+    runner = CliRunner()
+    captured = []
+
+    @cli.cmd(allow_extra_args=True)
+    def main(lg: logging.Logger, ctx: cli.Context):
+        captured.append(ctx.args)
+
+    res = runner.invoke(main, args)
+    assert res.exit_code == 0
+    assert captured == [expected_args]
+
+
+def test_cmd_allow_extra_args_logged_output():
+    """The extra args should be reported in the logger output."""
+    runner = CliRunner()
+
+    @cli.cmd(allow_extra_args=True)
+    def main(lg: logging.Logger, ctx: cli.Context):
+        lg.info(ctx.args)
+
+    res = runner.invoke(main, ["--foo", "bar"])
+    assert res.exit_code == 0
+    assert "['--foo', 'bar']" in res.output
+
+
+@pytest.mark.parametrize(
+    "args, expected_exit",
+    [
+        ([], 0),
+        (["--foo", "bar"], 2),
+        (["extra"], 2),
+    ],
+)
+def test_cmd_allow_extra_args_default_false(args, expected_exit):
+    runner = CliRunner()
+
+    @cli.cmd()
+    def main(lg: logging.Logger, ctx: cli.Context):
+        lg.info(ctx.args)
+
+    res = runner.invoke(main, args)
+    assert res.exit_code == expected_exit
+
+
+@pytest.mark.parametrize(
+    "args, expected_args",
+    [
+        (["sub"], []),
+        (["sub", "--foo", "bar"], ["--foo", "bar"]),
+        (["sub", "--foo", "bar", "extra", "-x"], ["--foo", "bar", "extra", "-x"]),
+    ],
+)
+def test_grp_allow_extra_args_propagates_to_subcommands(args, expected_args):
+    runner = CliRunner()
+    captured = []
+
+    @cli.grp(allow_extra_args=True)
+    def main():
+        pass
+
+    @cli.cmd(grp=main)
+    def sub(lg: logging.Logger, ctx: cli.Context):
+        captured.append(ctx.args)
+
+    res = runner.invoke(main, args)
+    assert res.exit_code == 0
+    assert captured == [expected_args]
+
+
+@pytest.mark.parametrize(
+    "args, expected_exit",
+    [
+        (["sub"], 0),
+        (["sub", "--foo", "bar"], 2),
+        (["sub", "extra"], 2),
+    ],
+)
+def test_grp_allow_extra_args_default_false(args, expected_exit):
+    runner = CliRunner()
+
+    @cli.grp()
+    def main():
+        pass
+
+    @cli.cmd(grp=main)
+    def sub(lg: logging.Logger, ctx: cli.Context):
+        lg.info(ctx.args)
+
+    res = runner.invoke(main, args)
+    assert res.exit_code == expected_exit
+
+
+def test_grp_allow_extra_args_opt_in_per_command():
+    """A group with allow_extra_args=False must not prevent a subcommand from opting in."""
+    runner = CliRunner()
+    captured = []
+
+    @cli.grp()
+    def main():
+        pass
+
+    @cli.cmd(grp=main)
+    def strict():
+        print("STRICT OK")
+
+    @cli.cmd(grp=main, allow_extra_args=True)
+    def relaxed(lg: logging.Logger, ctx: cli.Context):
+        captured.append(ctx.args)
+
+    res = runner.invoke(main, ["strict", "--foo"])
+    assert res.exit_code == 2
+
+    res = runner.invoke(main, ["relaxed", "--foo", "bar"])
+    assert res.exit_code == 0
+    assert captured == [["--foo", "bar"]]
+
+
+def test_grp_allow_extra_args_with_default_command():
+    runner = CliRunner()
+    captured = []
+
+    @cli.cmd(allow_extra_args=True)
+    def default_cmd(lg: logging.Logger, ctx: cli.Context):
+        captured.append(ctx.args)
+
+    @cli.grp(default=lambda: default_cmd, allow_extra_args=True)
+    def main():
+        pass
+
+    main.add_command(default_cmd)
+
+    res = runner.invoke(main, ["--foo", "bar"])
+    assert res.exit_code == 0
+    assert captured == [["--foo", "bar"]]
