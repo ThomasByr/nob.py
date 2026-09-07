@@ -53,6 +53,22 @@ class AliasedGroup(click.RichGroup):
     """Aliased rich-click.Group"""
 
     @override
+    def parse_args(self, ctx, args):
+        super().parse_args(ctx, args)
+        # When the group allows extra args and has a default command, an option-like
+        # token cannot be a subcommand name: treat everything as extra args instead
+        # so that the default command can pick them up in `ctx.args`.
+        if (
+            getattr(self, "__nob_cli_allow_extra_args", False)
+            and self.invoke_without_command
+            and ctx._protected_args
+            and any(ctx._protected_args[0].startswith(prefix) for prefix in ctx._opt_prefixes)
+        ):
+            ctx.args = [*ctx._protected_args, *ctx.args]
+            ctx._protected_args = []
+        return ctx.args
+
+    @override
     def get_command(self, ctx, cmd_name):
         rv = click.Group.get_command(self, ctx, cmd_name)
         if rv is not None:

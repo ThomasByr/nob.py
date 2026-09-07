@@ -178,6 +178,28 @@ def __get_config_from_function(func: Callable) -> Config | None:
     return getattr(func, "__nob_cli_config", None)
 
 
+def __set_allow_extra_args_on_function(func: Callable, allow: bool):
+    """Sets the allow_extra_args flag on the function so that the cmd decorator can read it from its parent group.
+
+    Args:
+        func (Callable): The function to set the flag on.
+        allow (bool): Whether extra args are allowed.
+    """
+    setattr(func, "__nob_cli_allow_extra_args", allow)
+
+
+def __get_allow_extra_args_from_function(func: Callable) -> bool:
+    """Gets the allow_extra_args flag from the function if it exists.
+
+    Args:
+        func (Callable): The function to get the flag from.
+
+    Returns:
+        bool: The flag if it exists, otherwise False.
+    """
+    return getattr(func, "__nob_cli_allow_extra_args", False)
+
+
 def __merge_configs(parent_cfg: Config, child_cfg: Config) -> Config:
     """Merges the parent config with the child config. The child config takes precedence over the parent config.
 
@@ -208,6 +230,7 @@ def __merge_configs(parent_cfg: Config, child_cfg: Config) -> Config:
 def grp(
     grp: click.RichGroup | None = None,
     default: Callable[[], click.RichCommand] | None = None,
+    allow_extra_args: bool = False,
     *default_args,
     **default_kwargs,
 ) -> click.RichGroup:
@@ -217,11 +240,15 @@ def grp(
     Args:
         grp (click.RichGroup, optional): Parent group to attach the group to. Defaults to None.
         default (() -> RichCommand, optional): Factory of the default command to run if nothing is passed. Defaults to None.
+        allow_extra_args (bool, optional): Whether to let all the commands of this group collect the extra arguments in `ctx.args`. Defaults to False.
         *default_args (): Default arguments.
         **default_kwargs (): Default named arguments.
     """
 
     entity = grp or click
+    # Click groups rely on `allow_extra_args=True` (their class default) to dispatch
+    # subcommands, so the settings are only set when opting in — never explicitly to False.
+    extra_ctx = {"ignore_unknown_options": True, "allow_extra_args": True} if allow_extra_args else {}
 
     def inner(main: Callable[P, R]):
         dec = (
@@ -230,7 +257,7 @@ def grp(
                     name=main.__name__,  # ty:ignore[unresolved-attribute]
                     help=main.__doc__,
                     cls=AliasedGroup,
-                    context_settings={"help_option_names": ["-h", "--help"]},
+                    context_settings={"help_option_names": ["-h", "--help"], **extra_ctx},
                     invoke_without_command=default is not None,
                 )
             ]
@@ -242,12 +269,24 @@ def grp(
 
         def wrapper(ctx: click.Context, *args, **kwargs):
             if default is not None and ctx.invoked_subcommand is None:
-                ctx.forward(default(), *default_args, **default_kwargs)
+                cmd = default()
+                if ctx.args:
+                    # Re-parse the extra args for the default command (like Group.invoke
+                    # does for named subcommands) so that it picks them up in its own `ctx.args`.
+                    sub_ctx = cmd.make_context(
+                        cmd.name, ctx.args, parent=ctx, allow_extra_args=True, ignore_unknown_options=True
+                    )
+                    with sub_ctx:
+                        sub_ctx.command.invoke(sub_ctx)
+                else:
+                    ctx.forward(cmd, *default_args, **default_kwargs)
             return main(*args, **kwargs)
 
         __preserve_click_params(main, wrapper)
         for d in reversed(dec):
             wrapper = d(wrapper)
+        # Set on the resulting group object so that `cmd(grp=...)` can read it.
+        __set_allow_extra_args_on_function(wrapper, allow_extra_args)
         return wrapper
 
     return inner  # ty:ignore[invalid-return-type]
@@ -258,6 +297,7 @@ def cmd(
     log_file: str | None = None,
     log_file_max_bytes: int | None = None,
     log_file_backup_count: int | None = None,
+    allow_extra_args: bool = False,
 ) -> click.RichCommand:
     """Decorator to create a command. Can be attached to a group.\\
     Adds the following parameters to the command if they are present in the function signature or if the function accepts `**kwargs`:
@@ -270,8 +310,11 @@ def cmd(
         log_file (str | None, optional): The path where the RotatingFileHandler will write its outputs. Defaults to None. Can be set via the CLI with `--log-file`.
         log_file_max_bytes (int | None, optional): The maximum size of the log file before it is rotated. Defaults to 10 MB per file. Can be set via the CLI with `--log-file-max-bytes`.
         log_file_backup_count (int | None, optional): The number of backup log files to keep. Defaults to 5. Can be set via the CLI with `--log-file-backup-count`.
+        allow_extra_args (bool, optional): Whether to collect the extra arguments in `ctx.args`. Defaults to False. Automatically enabled for all the commands of a group declared with `cli.grp(allow_extra_args=True)`.
     """
     entity = grp or click
+    allow_extra_args = allow_extra_args or (grp is not None and __get_allow_extra_args_from_function(grp))
+    extra_ctx = {"ignore_unknown_options": True, "allow_extra_args": True} if allow_extra_args else {}
 
     def inner(func: Callable[P, R]):
         dec = (
@@ -279,7 +322,7 @@ def cmd(
                 entity.command(
                     name=(name := func.__name__),  # ty:ignore[unresolved-attribute]
                     help=func.__doc__,
-                    context_settings={"help_option_names": ["-h", "--help"]},
+                    context_settings={"help_option_names": ["-h", "--help"], **extra_ctx},
                 ),
             ]
             + __add_config_options(grp)
