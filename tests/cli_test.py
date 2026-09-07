@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 import pytest
 import rich_click as click
@@ -75,6 +76,142 @@ def test_group_options_log_file_and_verbosity(tmp_path, logging_flag, log_file_f
     res = runner.invoke(show, [logging_flag, log_file_flag, str(log_path), "--name", "Eric"])
     assert res.exit_code == 0
     assert f"{log_level}:{str(log_path)}:Eric" in res.output
+
+
+@pytest.mark.parametrize(
+    "cmd_log_file, cmd_max_bytes, cmd_backup_count, cli_log_file, cli_max_bytes, cli_backup_count",
+    [
+        # Nothing specified -> defaults (None, the logging layer applies 10 MB / 5)
+        (None, None, None, None, None, None),
+        # Only @cli.cmd arguments -> they override the defaults
+        ("cmd.log", 111, 1, None, None, None),
+        ("cmd.log", None, None, None, None, None),
+        (None, 111, None, None, None, None),
+        (None, None, 1, None, None, None),
+        # Only CLI options -> they override the defaults
+        (None, None, None, "cli.log", 222, 2),
+        (None, None, None, "cli.log", None, None),
+        (None, None, None, None, 222, None),
+        (None, None, None, None, None, 2),
+        # CLI overrides @cli.cmd on every parameter
+        ("cmd.log", 111, 1, "cli.log", 222, 2),
+        # CLI wins where given, @cli.cmd fills the gaps
+        ("cmd.log", 111, 1, "cli.log", None, None),
+        ("cmd.log", 111, 1, None, 222, None),
+        ("cmd.log", 111, 1, None, None, 2),
+        (None, 111, 1, "cli.log", None, None),
+        ("cmd.log", None, 1, None, 222, None),
+        ("cmd.log", 111, None, None, None, 2),
+    ],
+)
+def test_log_file_options_precedence(
+    tmp_path,
+    cmd_log_file,
+    cmd_max_bytes,
+    cmd_backup_count,
+    cli_log_file,
+    cli_max_bytes,
+    cli_backup_count,
+):
+    """Precedence of the log file options: CLI > @cli.cmd arguments > defaults."""
+    runner = CliRunner()
+
+    cmd_kwargs: dict[str, Any] = {}
+    if cmd_log_file is not None:
+        cmd_kwargs["log_file"] = str(tmp_path / cmd_log_file)
+    if cmd_max_bytes is not None:
+        cmd_kwargs["log_file_max_bytes"] = cmd_max_bytes
+    if cmd_backup_count is not None:
+        cmd_kwargs["log_file_backup_count"] = cmd_backup_count
+
+    args = []
+    if cli_log_file is not None:
+        args += ["--log-file", str(tmp_path / cli_log_file)]
+    if cli_max_bytes is not None:
+        args += ["--log-file-max-bytes", str(cli_max_bytes)]
+    if cli_backup_count is not None:
+        args += ["--log-file-backup-count", str(cli_backup_count)]
+
+    @cli.cmd(**cmd_kwargs)
+    def main(cfg: Config):
+        print(f"FILE:{cfg.log_file}|MAX:{cfg.log_file_max_bytes}|BACKUP:{cfg.log_file_backup_count}")
+
+    res = runner.invoke(main, args)
+    assert res.exit_code == 0
+
+    expected_log_file = (
+        str(tmp_path / (cli_log_file or cmd_log_file)) if (cli_log_file or cmd_log_file) else None
+    )
+    expected_max_bytes = cli_max_bytes if cli_max_bytes is not None else cmd_max_bytes
+    expected_backup_count = cli_backup_count if cli_backup_count is not None else cmd_backup_count
+    expected = f"FILE:{expected_log_file}|MAX:{expected_max_bytes}|BACKUP:{expected_backup_count}"
+    assert expected in res.output
+
+
+@pytest.mark.parametrize(
+    "cmd_log_file, cmd_max_bytes, cmd_backup_count, cli_log_file, cli_max_bytes, cli_backup_count",
+    [
+        # Nothing specified -> defaults
+        (None, None, None, None, None, None),
+        # Only @cli.cmd arguments -> they override the defaults
+        ("cmd.log", 111, 1, None, None, None),
+        # Only group CLI options -> they override the defaults
+        (None, None, None, "cli.log", 222, 2),
+        # CLI (on the group) overrides @cli.cmd
+        ("cmd.log", 111, 1, "cli.log", 222, 2),
+        # CLI wins where given, @cli.cmd fills the gaps
+        ("cmd.log", 111, 1, "cli.log", None, None),
+        ("cmd.log", 111, 1, None, 222, 2),
+    ],
+)
+def test_log_file_options_precedence_with_group(
+    tmp_path,
+    cmd_log_file,
+    cmd_max_bytes,
+    cmd_backup_count,
+    cli_log_file,
+    cli_max_bytes,
+    cli_backup_count,
+):
+    """Same precedence as `test_log_file_options_precedence`, but with the CLI options
+    declared on the parent group instead of the command itself.
+    """
+    runner = CliRunner()
+
+    cmd_kwargs: dict[str, Any] = {}
+    if cmd_log_file is not None:
+        cmd_kwargs["log_file"] = str(tmp_path / cmd_log_file)
+    if cmd_max_bytes is not None:
+        cmd_kwargs["log_file_max_bytes"] = cmd_max_bytes
+    if cmd_backup_count is not None:
+        cmd_kwargs["log_file_backup_count"] = cmd_backup_count
+
+    group_args = []
+    if cli_log_file is not None:
+        group_args += ["--log-file", str(tmp_path / cli_log_file)]
+    if cli_max_bytes is not None:
+        group_args += ["--log-file-max-bytes", str(cli_max_bytes)]
+    if cli_backup_count is not None:
+        group_args += ["--log-file-backup-count", str(cli_backup_count)]
+
+    @cli.grp()
+    def main():
+        pass
+
+    @cli.cmd(grp=main, **cmd_kwargs)
+    def sub(cfg: Config):
+        print(f"FILE:{cfg.log_file}|MAX:{cfg.log_file_max_bytes}|BACKUP:{cfg.log_file_backup_count}")
+
+    res = runner.invoke(main, [*group_args, "sub"])
+    assert res.exit_code == 0
+
+    expected_log_file = (
+        str(tmp_path / (cli_log_file or cmd_log_file)) if (cli_log_file or cmd_log_file) else None
+    )
+    expected_max_bytes = cli_max_bytes if cli_max_bytes is not None else cmd_max_bytes
+    expected_backup_count = cli_backup_count if cli_backup_count is not None else cmd_backup_count
+    expected = f"FILE:{expected_log_file}|MAX:{expected_max_bytes}|BACKUP:{expected_backup_count}"
+    assert expected in res.output
 
 
 @pytest.mark.parametrize(
