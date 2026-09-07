@@ -58,6 +58,14 @@ class ListOf(click.ParamType, Generic[T]):
         if self.length is not None and (self.min_length != 1 or self.max_length is not None):
             raise ValueError("Cannot specify both length and min/max length")
 
+    def __convert_part(self, part: str) -> T:
+        """Convert a single string part to the inner type."""
+        inner = self.inner_type
+        if isinstance(inner, click.ParamType):
+            return inner.convert(part, None, None)
+        assert inner is not None
+        return inner(part)  # ty:ignore[too-many-positional-arguments]
+
     def convert(self, value: str | list | None, param, ctx):
         if value is None:
             return None
@@ -82,7 +90,7 @@ class ListOf(click.ParamType, Generic[T]):
                 call_verify(self.verify, parts)  # ty:ignore[invalid-argument-type]
                 return parts
             # Regular verify and conversion
-            converted: list[T] = [self.inner_type(p) for p in parts]  # ty:ignore[invalid-assignment]
+            converted: list[T] = [self.__convert_part(p) for p in parts]
             call_verify(self.verify, converted)
             return converted
         except (ValueError, TypeError) as e:
