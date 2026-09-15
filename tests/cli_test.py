@@ -700,3 +700,193 @@ def test_grp_allow_extra_args_with_default_command():
     res = runner.invoke(main, ["--foo", "bar"])
     assert res.exit_code == 0
     assert captured == [["--foo", "bar"]]
+
+
+@pytest.fixture(
+    params=[
+        " ",  # space
+        ";",  # semicolon
+        "-",  # hyphen
+        ".",  # single dot
+        ":",  # colon
+        "|",  # pipe
+        "/",  # slash
+        "\t",  # tab
+        "::",  # multi-character separator
+        "+",  # plus
+    ]
+)
+def separator(request):
+    """Separators commonly used to join/split list arguments on the CLI."""
+    return request.param
+
+
+def test_list_of_default_separator_is_comma():
+    """`separator` defaults to a comma, so existing usages are unaffected."""
+    sep = cli.types.ListOf(int).separator
+    assert sep == ","
+
+    runner = CliRunner()
+
+    @cli.cmd()
+    @cli.opt("--numbers", type=cli.types.ListOf(int, separator=sep), required=True)
+    def process_numbers(numbers):
+        print(f"Processed numbers: {numbers}")
+
+    res = runner.invoke(process_numbers, ["--numbers", sep.join(["1", "2", "3"])])
+    assert res.exit_code == 0
+    assert "Processed numbers: [1, 2, 3]" in res.output
+
+
+def test_list_of_rejects_empty_separator():
+    """An empty separator cannot be used to split a value, so reject it early."""
+    with pytest.raises(ValueError, match="separator cannot be empty"):
+        cli.types.ListOf(int, separator="")
+
+
+def test_list_of_int_conversion_with_custom_separator(separator):
+    runner = CliRunner()
+
+    @cli.cmd()
+    @cli.opt("--numbers", type=cli.types.ListOf(int, separator=separator), required=True)
+    def process_numbers(numbers):
+        print(f"Processed numbers: {numbers}")
+        print(f"Types: {[type(n).__name__ for n in numbers]}")
+
+    res = runner.invoke(process_numbers, ["--numbers", separator.join(["1", "2", "3"])])
+    assert res.exit_code == 0
+    assert "Processed numbers: [1, 2, 3]" in res.output
+    assert "Types: ['int', 'int', 'int']" in res.output
+
+
+def test_list_of_float_conversion_with_custom_separator(separator):
+    runner = CliRunner()
+
+    @cli.cmd()
+    @cli.opt("--values", type=cli.types.ListOf(float, separator=separator), required=True)
+    def process_values(values):
+        print(f"Processed values: {values}")
+        print(f"Types: {[type(v).__name__ for v in values]}")
+
+    # Dot-free values so that the "." separator can be exercised as well.
+    res = runner.invoke(process_values, ["--values", separator.join(["1", "2", "3"])])
+    assert res.exit_code == 0
+    assert "Processed values: [1.0, 2.0, 3.0]" in res.output
+    assert "Types: ['float', 'float', 'float']" in res.output
+
+
+def test_list_of_str_conversion_with_custom_separator(separator):
+    runner = CliRunner()
+
+    @cli.cmd()
+    @cli.opt("--words", type=cli.types.ListOf(str, separator=separator), required=True)
+    def process_words(words):
+        print(f"Processed words: {words}")
+
+    res = runner.invoke(process_words, ["--words", separator.join(["hello", "world", "test"])])
+    assert res.exit_code == 0
+    assert "Processed words: ['hello', 'world', 'test']" in res.output
+
+
+@pytest.mark.parametrize("separator", [";", "-", ".", ":", "|", "/", "\t", "::", "+"])
+def test_list_of_custom_separator_strips_whitespace(separator):
+    """Whitespace around elements is still stripped, whatever the separator is.
+
+    The space separator is excluded: whitespace around it would produce empty parts.
+    """
+    runner = CliRunner()
+
+    @cli.cmd()
+    @cli.opt("--numbers", type=cli.types.ListOf(int, separator=separator), required=True)
+    def process_numbers(numbers):
+        print(f"Processed numbers: {numbers}")
+
+    res = runner.invoke(process_numbers, ["--numbers", separator.join(["1", " 2", "3 "])])
+    assert res.exit_code == 0
+    assert "Processed numbers: [1, 2, 3]" in res.output
+
+
+def test_list_of_custom_separator_does_not_split_on_comma(separator):
+    """Only the configured separator splits the value, the comma becomes a regular character."""
+    runner = CliRunner()
+
+    @cli.cmd()
+    @cli.opt("--words", type=cli.types.ListOf(str, separator=separator), required=True)
+    def process_words(words):
+        print(f"Processed words: {words}")
+
+    res = runner.invoke(process_words, ["--words", f"hello,world{separator}test"])
+    assert res.exit_code == 0
+    assert "Processed words: ['hello,world', 'test']" in res.output
+
+
+def test_list_of_custom_separator_conversion_failure(separator):
+    runner = CliRunner()
+
+    @cli.cmd()
+    @cli.opt("--numbers", type=cli.types.ListOf(int, separator=separator), required=True)
+    def process_numbers(numbers):
+        print(f"Processed numbers: {numbers}")
+
+    res = runner.invoke(process_numbers, ["--numbers", separator.join(["1", "two", "3"])])
+    assert res.exit_code == 2
+    assert "Could not convert" in res.output
+
+
+def test_list_of_custom_separator_with_verification(separator):
+    runner = CliRunner()
+
+    @cli.cmd()
+    @cli.opt(
+        "--numbers",
+        type=cli.types.ListOf(int, separator=separator, verify=lambda x: x > 0),
+        required=True,
+    )
+    def process_positive_numbers(numbers):
+        print(f"Processed positive numbers: {numbers}")
+
+    res = runner.invoke(process_positive_numbers, ["--numbers", separator.join(["1", "2", "3"])])
+    assert res.exit_code == 0
+    assert "Processed positive numbers: [1, 2, 3]" in res.output
+
+    res = runner.invoke(process_positive_numbers, ["--numbers", separator.join(["1", "0", "3"])])
+    assert res.exit_code == 2
+    assert "failed verification" in res.output
+
+
+def test_list_of_custom_separator_with_length_constraints(separator):
+    runner = CliRunner()
+
+    @cli.cmd()
+    @cli.opt("--numbers", type=cli.types.ListOf(int, separator=separator, length=3), required=True)
+    def process_numbers(numbers):
+        print(f"Processed numbers: {numbers}")
+
+    res = runner.invoke(process_numbers, ["--numbers", separator.join(["1", "2", "3"])])
+    assert res.exit_code == 0
+    assert "Processed numbers: [1, 2, 3]" in res.output
+
+    res = runner.invoke(process_numbers, ["--numbers", separator.join(["1", "2"])])
+    assert res.exit_code == 2
+    assert "Expected exactly 3 elements, got 2" in res.output
+
+
+def test_list_of_custom_separator_with_click_param_type(separator):
+    runner = CliRunner()
+
+    @cli.cmd()
+    @cli.opt(
+        "--values",
+        type=cli.types.ListOf(cli.types.IntRange(min=0, max=10), separator=separator),
+        required=True,
+    )
+    def process_values(values):
+        print(f"Processed values: {values}")
+
+    res = runner.invoke(process_values, ["--values", separator.join(["1", "2", "3"])])
+    assert res.exit_code == 0
+    assert "Processed values: [1, 2, 3]" in res.output
+
+    res = runner.invoke(process_values, ["--values", separator.join(["1", "20"])])
+    assert res.exit_code == 2
+    assert "20 is not in the range" in res.output
