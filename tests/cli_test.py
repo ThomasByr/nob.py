@@ -788,12 +788,9 @@ def test_list_of_str_conversion_with_custom_separator(separator):
     assert "Processed words: ['hello', 'world', 'test']" in res.output
 
 
-@pytest.mark.parametrize("separator", [";", "-", ".", ":", "|", "/", "\t", "::", "+"])
+@pytest.mark.parametrize("separator", [" ", ";", "-", ".", ":", "|", "/", "\t", "::", "+"])
 def test_list_of_custom_separator_strips_whitespace(separator):
-    """Whitespace around elements is still stripped, whatever the separator is.
-
-    The space separator is excluded: whitespace around it would produce empty parts.
-    """
+    """Whitespace around elements is still stripped, whatever the separator is."""
     runner = CliRunner()
 
     @cli.cmd()
@@ -804,6 +801,38 @@ def test_list_of_custom_separator_strips_whitespace(separator):
     res = runner.invoke(process_numbers, ["--numbers", separator.join(["1", " 2", "3 "])])
     assert res.exit_code == 0
     assert "Processed numbers: [1, 2, 3]" in res.output
+
+
+@pytest.mark.parametrize("separator", [" ", "\t", "\t ", "  "])
+def test_list_of_whitespace_separator_ignores_extra_whitespace(separator):
+    """With a whitespace separator, runs of whitespace collapse and the edges are trimmed
+    instead of producing empty parts that would fail the inner type conversion."""
+    runner = CliRunner()
+
+    @cli.cmd()
+    @cli.opt("--numbers", type=cli.types.ListOf(int, separator=separator), required=True)
+    def process_numbers(numbers):
+        print(f"Processed numbers: {numbers}")
+
+    for raw in ["1 2 3", "  1 2 3  ", "1  2  3", "1\t2 3", "1 2\t3\t"]:
+        res = runner.invoke(process_numbers, ["--numbers", raw])
+        assert res.exit_code == 0, res.output
+        assert "Processed numbers: [1, 2, 3]" in res.output
+
+
+@pytest.mark.parametrize("separator", [" ", "\t"])
+def test_list_of_whitespace_separator_empty_value_has_no_element(separator):
+    """An empty value holds no element at all, so the min_length constraint reports it."""
+    runner = CliRunner()
+
+    @cli.cmd()
+    @cli.opt("--numbers", type=cli.types.ListOf(int, separator=separator), required=True)
+    def process_numbers(numbers):
+        print(f"Processed numbers: {numbers}")
+
+    res = runner.invoke(process_numbers, ["--numbers", ""])
+    assert res.exit_code == 2
+    assert "Expected at least 1 elements, got 0" in res.output
 
 
 def test_list_of_custom_separator_does_not_split_on_comma(separator):

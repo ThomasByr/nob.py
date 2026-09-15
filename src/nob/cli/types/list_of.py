@@ -80,7 +80,11 @@ class ListOf(click.ParamType, Generic[T]):
         if isinstance(value, list):
             return value
 
-        parts = [p.strip() for p in value.split(self.separator)]
+        if self.separator.isspace():
+            # Splitting on whitespace already trims and collapses it
+            parts = value.split()
+        else:
+            parts = [p.strip() for p in value.split(self.separator)]
 
         # Validate length constraints
         if self.length is not None and len(parts) != self.length:
