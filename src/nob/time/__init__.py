@@ -53,7 +53,7 @@ def about(func_or_it: Callable[P, T] | Iterable[T] | None = None, *args: P.args,
     # Use as a callable
     if callable(func_or_it):
         with context_timing(timings):
-            result = func_or_it(*args, **kwargs)  # ty:ignore[call-top-callable]
+            result = func_or_it(*args, **kwargs)
         return HandleResult(timings, result)
 
     try:
