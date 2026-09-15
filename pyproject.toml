@@ -1,6 +1,6 @@
 [project]
 name = "nob.py"
-version = "1.5.0"
+version = "1.5.1"
 license = "MIT"
 description = "Reasonable defaults for Click CLI applications."
 readme = "README.md"
