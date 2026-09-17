@@ -347,6 +347,57 @@ def test_aliased_group_prefix_matching(args, expected_exit, expected_output):
 
 
 @pytest.mark.parametrize(
+    "name",
+    ["my_custom_command", "my_custom", "my", "my-custom-command", "my-custom", "my-c"],
+)
+def test_aliased_group_hyphen_underscore_matching(name):
+    """`-` and `_` are interchangeable, both for exact and unique-prefix matches."""
+    runner = CliRunner()
+
+    @cli.grp()
+    def main():
+        pass
+
+    @cli.cmd(grp=main)
+    def my_custom_command():
+        print("RAN")
+
+    res = runner.invoke(main, [name])
+    assert res.exit_code == 0
+    assert "RAN" in res.output
+
+
+@pytest.mark.parametrize(
+    "args",
+    [
+        ["my_group", "my_command"],
+        ["my-group", "my-command"],
+        ["my_group", "my-command"],
+        ["my-group", "my_command"],
+    ],
+)
+def test_aliased_group_hyphen_underscore_matching_nested(args):
+    """Normalization applies at every level: both the group and its subcommand resolve."""
+    runner = CliRunner()
+
+    @cli.grp()
+    def main():
+        pass
+
+    @cli.grp(grp=main)
+    def my_group():
+        pass
+
+    @cli.cmd(grp=my_group)
+    def my_command():
+        print("RAN")
+
+    res = runner.invoke(main, args)
+    assert res.exit_code == 0
+    assert "RAN" in res.output
+
+
+@pytest.mark.parametrize(
     "args, expected_level, expects_error",
     [
         ([], logging.INFO, False),

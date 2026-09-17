@@ -80,7 +80,11 @@ class AliasedGroup(click.RichGroup):
             actual_cmd = cfg.aliases[cmd_name]
             return click.Group.get_command(self, ctx, actual_cmd)
 
-        matches = [x for x in self.list_commands(ctx) if x.lower().startswith(cmd_name.lower())]
+        # Treat `-` and `_` as equivalent so that both `my-cmd` and `my_cmd` match `my_cmd`.
+        normalized_name = cmd_name.lower().replace("-", "_")
+        matches = [
+            x for x in self.list_commands(ctx) if x.lower().replace("-", "_").startswith(normalized_name)
+        ]
         if not matches:
             return None
         elif len(matches) == 1:
