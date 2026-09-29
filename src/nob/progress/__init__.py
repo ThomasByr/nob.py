@@ -1,11 +1,11 @@
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Sequence
 from typing import TypeVar
 
-from rich.progress import Console, Progress
+from rich.progress import Console, Progress, ProgressColumn
 
-from .progress import create_columns
+from .progress import MetricsColumn, create_columns
 
-__all__ = ["track", "progress"]
+__all__ = ["track", "progress", "create_columns", "MetricsColumn"]
 
 T = TypeVar("T")
 
@@ -19,6 +19,7 @@ def track(
     hide_processing_speed: bool = False,
     human_format: bool = True,
     unit: str = "",
+    extra_columns: Sequence[ProgressColumn] = (),
     completed: int = 0,
     auto_refresh: bool = True,
     transient: bool = False,
@@ -41,6 +42,7 @@ def track(
         hide_processing_speed (bool, optional): Whether to hide the processing speed column. Defaults to False.
         human_format (bool, optional): Whether to use human readable format for numbers (count and throughput). Defaults to True.
         unit (str, optional): Unit to use for human readable format. Defaults to "".
+        extra_columns (Sequence[ProgressColumn], optional): Additional user-provided columns, appended after the defaults. Use `MetricsColumn` to display values updated via `Progress.update(task, **fields)`. Defaults to ().
         completed (int, optional): Number of steps completed so far. Defaults to 0.
         auto_refresh (bool, optional): Automatic refresh, disable to force a refresh after each iteration. Default is True.
         transient: (bool, optional): Clear the progress on exit. Defaults to False.
@@ -62,6 +64,7 @@ def track(
             hide_processing_speed,
             human_format,
             unit,
+            extra_columns,
         ),
         auto_refresh=auto_refresh,
         console=console,
@@ -88,6 +91,7 @@ def progress(
     hide_processing_speed: bool = False,
     human_format: bool = True,
     unit: str = "",
+    extra_columns: Sequence[ProgressColumn] = (),
     auto_refresh: bool = True,
     transient: bool = False,
     get_time: Callable[[], float] | None = None,
@@ -104,6 +108,7 @@ def progress(
         hide_processing_speed (bool, optional): Whether to hide the processing speed column. Defaults to False.
         human_format (bool, optional): Whether to use human readable format for numbers (count and throughput). Defaults to True.
         unit (str, optional): Unit to use for human readable format. Defaults to "".
+        extra_columns (Sequence[ProgressColumn], optional): Additional user-provided columns, appended after the defaults. Use `MetricsColumn` to display values updated via `Progress.update(task, **fields)`. Defaults to ().
         auto_refresh (bool, optional): Automatic refresh, disable to force a refresh after each iteration. Defaults to True.
         transient (bool, optional): Clear the progress on exit. Defaults to False.
         get_time (Callable[[], float] | None, optional): A callable that gets the current time, or None to use Console.get_time. Defaults to None.
@@ -122,6 +127,7 @@ def progress(
             hide_processing_speed,
             human_format,
             unit,
+            extra_columns,
         ),
         auto_refresh=auto_refresh,
         console=console,

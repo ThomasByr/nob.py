@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import timedelta
 
@@ -43,6 +44,9 @@ class RichProgressBarTheme:
     metrics: str | Style = "italic"
     metrics_text_delimiter: str = " "
     metrics_format: str = ".3f"
+
+
+theme = RichProgressBarTheme()
 
 
 class CustomTimeColumn(ProgressColumn):
@@ -131,7 +135,37 @@ class ProcessingSpeedColumn(ProgressColumn):
         return Text(task_speed, style=self.style)
 
 
-theme = RichProgressBarTheme()
+class MetricsColumn(ProgressColumn):
+    """A column containing custom metrics, read from the task's `fields`.
+
+    Update the rendered values with `Progress.update(task, loss=..., ...)` or
+    `Progress.add_task(description, total=..., loss=...)`.
+    """
+
+    def __init__(
+        self,
+        style: str | Style = theme.metrics,
+        text_delimiter: str = theme.metrics_text_delimiter,
+        metrics_format: str = theme.metrics_format,
+    ) -> None:
+        self.style = style
+        self.__text_delimiter = text_delimiter
+        self.__metrics_format = metrics_format
+        super().__init__()
+
+    @override
+    def render(self, task: "Task") -> Text:
+        if not task.fields:
+            return Text("")
+        metrics_texts = []
+        for name, value in task.fields.items():
+            if not isinstance(value, str):
+                try:
+                    value = f"{value:{self.__metrics_format}}"
+                except (TypeError, ValueError):
+                    value = str(value)
+            metrics_texts.append(f"{name}: {value}")
+        return Text(self.__text_delimiter.join(metrics_texts), style=self.style)
 
 
 def create_columns(
@@ -141,6 +175,7 @@ def create_columns(
     hide_processing_speed: bool = False,
     human_format: bool = True,
     unit: str = "",
+    extra_columns: Sequence[ProgressColumn] = (),
 ) -> list[ProgressColumn]:
     """Create a list of defaults columns for your `rich.progress.Progress` object.
 
@@ -151,6 +186,7 @@ def create_columns(
         hide_processing_speed (bool, optional): Whether to hide the processing speed column. Defaults to False.
         human_format (bool, optional): Whether to use human readable format for numbers. Defaults to True.
         unit (str, optional): Unit to use for human readable format. Defaults to "".
+        extra_columns (Sequence[ProgressColumn], optional): Additional user-provided columns, appended after the defaults. Defaults to ().
 
     Returns:
         list[ProgressColumn]: _description_
@@ -186,4 +222,5 @@ def create_columns(
         + get_batches_column()
         + get_time_column()
         + get_processing_speed_column()
+        + list(extra_columns)
     )

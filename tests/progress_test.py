@@ -1,5 +1,6 @@
 import pytest
 from pytest import CaptureFixture
+from rich.progress import TextColumn
 
 from nob import progress
 
@@ -19,7 +20,6 @@ def run_progress(capsys: CaptureFixture[str]):
         human_format: bool = True,
         unit: str = "",
     ):
-
         if mode == "track":
             kwargs = {
                 "description": description,
@@ -159,3 +159,50 @@ def test_human_formatting_and_units(
         assert expected in out
     for not_in in expected_not_in:
         assert not_in not in out
+
+
+@pytest.mark.parametrize("mode", ["track", "progress"])
+def test_extra_columns(capsys: CaptureFixture[str], mode: str):
+    """User-provided columns are appended after the defaults and rendered."""
+    extra = [TextColumn("MAGIC-COLUMN")]
+
+    if mode == "track":
+        for _ in progress.track(range(1), extra_columns=extra):
+            pass
+    else:
+        bar = progress.progress(extra_columns=extra)
+        task = bar.add_task("Working...", total=1)
+        with bar:
+            bar.advance(task)
+
+    assert "MAGIC-COLUMN" in capsys.readouterr().out
+
+
+def test_extra_columns_position():
+    """Extra columns go last, where metrics belong."""
+    extra = [TextColumn("MAGIC-COLUMN")]
+    columns = progress.create_columns(extra_columns=extra)
+    assert columns[-1] is extra[0]
+
+
+def test_metrics_column(capsys: CaptureFixture[str]):
+    """MetricsColumn renders task.fields, updated dynamically."""
+    bar = progress.progress(extra_columns=[progress.MetricsColumn()])
+    task = bar.add_task("Working...", total=1)
+    with bar:
+        bar.update(task, advance=1, loss=0.5, name="abc")
+
+    out = " ".join(capsys.readouterr().out.split())
+    assert "loss: 0.500" in out
+    assert "name: abc" in out
+
+
+def test_metrics_column_no_fields(capsys: CaptureFixture[str]):
+    """MetricsColumn renders nothing when the task has no fields."""
+    bar = progress.progress(extra_columns=[progress.MetricsColumn()])
+    task = bar.add_task("Working...", total=1)
+    with bar:
+        bar.advance(task)
+
+    out = capsys.readouterr().out
+    assert ": " not in out.replace("-:--:--", "")
