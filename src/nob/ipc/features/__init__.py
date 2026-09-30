@@ -1,4 +1,5 @@
 import logging
+import sys
 from abc import ABC, abstractmethod
 from typing import Any
 
@@ -7,12 +8,7 @@ from ...utils.auto_numbered_enum import AutoNumberedEnum
 try:
     import posix_ipc  # pyright: ignore[reportMissingImports]
 except ImportError:
-
-    class dummy:
-        def __getattr__(self, _):
-            raise NotImplementedError("The current OS does not provide working POSIX IPC.")
-
-    posix_ipc = dummy()
+    posix_ipc: Any = None
 
 __all__ = ["Flags", "NamedIPC"]
 
@@ -36,6 +32,13 @@ class NamedIPC(ABC):
         unlink_on_delete: bool | None = None,
     ) -> None:
         """Initialize the IPC object and handle existence flags."""
+        if posix_ipc is None:
+            if sys.platform == "win32":
+                raise NotImplementedError("Named IPC objects are not supported on Windows.")
+            raise ImportError(
+                "Named IPC objects require the 'ipc' extra. Install with: pip install 'nob.py[ipc]'"
+            )
+
         self.__name = "/" + name.lstrip("/") if isinstance(name, str) else ""
         self.__unlink_on_delete = unlink_on_delete
         self.__linked_existing_object: bool | None = None
