@@ -7,6 +7,7 @@ from rich.progress import (
     BarColumn,
     ProgressColumn,
     Task,
+    TaskID,
     TextColumn,
 )
 from rich.style import Style
@@ -56,6 +57,8 @@ class CustomTimeColumn(ProgressColumn):
     def __init__(self, style: str | Style, known_total: bool) -> None:
         self.style = style
         self.__known_total = known_total
+        # Frozen fallback ETAs, keyed by task: recomputed only when completed changes.
+        self.__last_eta: dict[TaskID, tuple[float, float | None]] = {}
         super().__init__()
 
     @override
@@ -63,7 +66,11 @@ class CustomTimeColumn(ProgressColumn):
         elapsed = task.finished_time if task.finished else task.elapsed
         remaining = task.time_remaining
         if remaining is None and not task.finished:
-            remaining = self.__lifetime_eta(task)
+            completed, eta = self.__last_eta.get(task.id, (None, None))
+            if completed != task.completed:
+                eta = self.__lifetime_eta(task)
+                self.__last_eta[task.id] = (task.completed, eta)
+            remaining = eta
         elapsed_delta = "-:--:--" if elapsed is None else str(timedelta(seconds=int(elapsed)))
         remaining_delta = "-:--:--" if remaining is None else str(timedelta(seconds=int(remaining)))
         if self.__known_total:

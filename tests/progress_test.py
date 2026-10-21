@@ -227,6 +227,25 @@ def test_time_column_fallback_eta():
     assert any(char.isdigit() for char in rendered)
 
 
+def test_time_column_fallback_eta_frozen_between_advances():
+    """No new completion means no new estimate: the fallback ETA must not grow between renders."""
+    tick = [0.0]
+
+    def get_time() -> float:
+        tick[0] += 1.0
+        return tick[0]
+
+    bar = progress.progress(known_total=True, get_time=get_time)
+    task_id = bar.add_task("Working...", total=10)
+    bar.advance(task_id, 1)
+    task = next(t for t in bar.tasks if t.id == task_id)
+
+    column = CustomTimeColumn(theme.time, known_total=True)
+    first_eta = str(column.render(task)).split("•")[1]
+    second_eta = str(column.render(task)).split("•")[1]  # time moved on, completed did not
+    assert second_eta == first_eta
+
+
 def test_speed_estimate_period_wiring():
     """speed_estimate_period is passed through to the rich Progress object."""
     bar = progress.progress(known_total=True, speed_estimate_period=123.0)
