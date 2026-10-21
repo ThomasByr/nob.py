@@ -26,6 +26,7 @@ def track(
     get_time: Callable[[], float] | None = None,
     console: Console | None = None,
     refresh_per_second: float = 10,
+    speed_estimate_period: float = 30.0,
     update_period: float = 0.1,
     disable: bool = False,
 ) -> Iterable[T]:
@@ -49,6 +50,7 @@ def track(
         get_time: (Callable, optional): A callable that gets the current time, or None to use Console.get_time. Defaults to None.
         console (Console, optional): Console to write to. Default creates internal Console instance.
         refresh_per_second (float): Number of times per second to refresh the progress information. Defaults to 10.
+        speed_estimate_period (float, optional): Period (in seconds) used to calculate the speed estimate. Defaults to 30.
         update_period (float, optional): Minimum time (in seconds) between calls to update(). Defaults to 0.1.
         disable (bool, optional): Disable display of progress.
 
@@ -71,6 +73,7 @@ def track(
         transient=transient,
         get_time=get_time,
         refresh_per_second=refresh_per_second or 10,
+        speed_estimate_period=speed_estimate_period,
         disable=disable,
     )
 
@@ -97,6 +100,7 @@ def progress(
     get_time: Callable[[], float] | None = None,
     console: Console | None = None,
     refresh_per_second: float = 10,
+    speed_estimate_period: float = 30.0,
     disable: bool = False,
 ) -> Progress:
     """Creates a new custom `rich.progress.Progress` object.
@@ -114,6 +118,7 @@ def progress(
         get_time (Callable[[], float] | None, optional): A callable that gets the current time, or None to use Console.get_time. Defaults to None.
         console (Console | None, optional): Console to write to. Defaults to None.
         refresh_per_second (float): Number of times per second to refresh the progress information. Defaults to 10.
+        speed_estimate_period (float, optional): Period (in seconds) used to calculate the speed estimate. Defaults to 30.
         disable (bool, optional): Disable display of progress.
 
     Returns:
@@ -134,5 +139,6 @@ def progress(
         transient=transient,
         get_time=get_time,
         refresh_per_second=refresh_per_second or 10,
+        speed_estimate_period=speed_estimate_period,
         disable=disable,
     )

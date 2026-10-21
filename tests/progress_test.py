@@ -3,6 +3,7 @@ from pytest import CaptureFixture
 from rich.progress import TextColumn
 
 from nob import progress
+from nob.progress.progress import CustomTimeColumn, theme
 
 
 @pytest.fixture
@@ -206,3 +207,27 @@ def test_metrics_column_no_fields(capsys: CaptureFixture[str]):
 
     out = capsys.readouterr().out
     assert ": " not in out.replace("-:--:--", "")
+
+
+def test_time_column_fallback_eta():
+    """With a single completion, the lifetime-average fallback ETA is shown instead of '-:--:--'."""
+    tick = [0.0]
+
+    def get_time() -> float:
+        tick[0] += 1.0
+        return tick[0]
+
+    bar = progress.progress(known_total=True, get_time=get_time)
+    task_id = bar.add_task("Working...", total=10)
+    bar.advance(task_id, 1)
+    task = next(t for t in bar.tasks if t.id == task_id)
+
+    rendered = str(CustomTimeColumn(theme.time, known_total=True).render(task))
+    assert "-:--:--" not in rendered
+    assert any(char.isdigit() for char in rendered)
+
+
+def test_speed_estimate_period_wiring():
+    """speed_estimate_period is passed through to the rich Progress object."""
+    bar = progress.progress(known_total=True, speed_estimate_period=123.0)
+    assert bar.speed_estimate_period == 123.0

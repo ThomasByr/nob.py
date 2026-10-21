@@ -62,11 +62,23 @@ class CustomTimeColumn(ProgressColumn):
     def render(self, task: "Task") -> Text:
         elapsed = task.finished_time if task.finished else task.elapsed
         remaining = task.time_remaining
+        if remaining is None and not task.finished:
+            remaining = self.__lifetime_eta(task)
         elapsed_delta = "-:--:--" if elapsed is None else str(timedelta(seconds=int(elapsed)))
         remaining_delta = "-:--:--" if remaining is None else str(timedelta(seconds=int(remaining)))
         if self.__known_total:
             return Text(f"{elapsed_delta} • {remaining_delta}", style=self.style)
         return Text(f"{elapsed_delta}", style=self.style)
+
+    def __lifetime_eta(self, task: "Task") -> float | None:
+        # Fallback estimate from lifetime average, when rich's rolling window has too few samples.
+        total = task.total
+        if total is None or total == float("inf") or task.completed <= 0:
+            return None
+        elapsed = task.elapsed
+        if elapsed is None or elapsed <= 0:
+            return None
+        return (total - task.completed) * (elapsed / task.completed)
 
 
 class BatchesProcessedColumn(ProgressColumn):
