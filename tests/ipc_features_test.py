@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 import pytest
 
+posix_ipc = pytest.importorskip("posix_ipc")
 from nob.ipc import NamedSemaphore
 
 
