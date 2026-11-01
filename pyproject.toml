@@ -55,7 +55,7 @@ module-name = "nob"
 # McCabe complexity (`C901`) by default.
 
 # Enable flake8-bugbear (`B`) rules, in addition to the defaults.
-lint.select = ["E", "F", "B"]
+lint.select = ["E", "F", "B", "I"]
 lint.ignore = ["E501"]
 
 # Allow fix for all enabled rules (when `--fix`) is provided.

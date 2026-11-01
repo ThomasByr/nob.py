@@ -55,7 +55,7 @@ test:
 [doc("Run `ruff` for formatting")]
 format:
     - uvx ruff format
-    uvx ruff check --select I --fix
+    uvx ruff check --fix
 
 [group("Lint")]
 [doc("Run linting with `ruff`")]
