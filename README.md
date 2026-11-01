@@ -193,4 +193,4 @@ just release
 
 > [!TIP]
 > Install pre-commit hooks: `just pc-install`.<br>
-> To keep hooks somewhat fast enough, they will <u>only</u> check (not forcibly fix) for typing and formatting.
+> Hooks only auto-fix on modified files, and only for checks that don't slow the process down *too much*.
