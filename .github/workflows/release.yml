@@ -6,8 +6,9 @@ on:
       - v*
 
 jobs:
-  run:
+  publish:
     runs-on: ubuntu-latest
+    if: github.repository == 'ThomasByr/nob.py'
     environment:
       name: pypi
     permissions:
