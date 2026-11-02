@@ -19,4 +19,6 @@ repos:
     rev: v0.0.95
     hooks:
     -   id: ty
-        args: [--isolated, --no-python-downloads, --no-cache]
+        always_run: false
+        types_or: [python, pyi]
+        args: [--isolated, --no-python-downloads]
